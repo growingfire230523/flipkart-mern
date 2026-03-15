@@ -1,5 +1,11 @@
 import axios from "axios";
 import { ADD_TO_WISHLIST, REMOVE_FROM_WISHLIST } from "../constants/wishlistConstants";
+import { getActiveUserId, saveWishlistItemsToStorage } from "../utils/cartStorage";
+
+const resolveWishlistOwnerId = (getState) => {
+    const state = getState?.();
+    return state?.user?.user?._id || getActiveUserId() || null;
+};
 
 // Add To Wishlist
 export const addToWishlist = (id) => async (dispatch, getState) => {
@@ -18,7 +24,8 @@ export const addToWishlist = (id) => async (dispatch, getState) => {
         },
     });
 
-    localStorage.setItem('wishlistItems', JSON.stringify(getState().wishlist.wishlistItems))
+    const ownerId = resolveWishlistOwnerId(getState);
+    saveWishlistItemsToStorage(ownerId, getState().wishlist.wishlistItems);
 }
 
 // Remove From Wishlist
@@ -29,5 +36,6 @@ export const removeFromWishlist = (id) => async (dispatch, getState) => {
         payload: id,
     });
 
-    localStorage.setItem('wishlistItems', JSON.stringify(getState().wishlist.wishlistItems))
+    const ownerId = resolveWishlistOwnerId(getState);
+    saveWishlistItemsToStorage(ownerId, getState().wishlist.wishlistItems);
 }

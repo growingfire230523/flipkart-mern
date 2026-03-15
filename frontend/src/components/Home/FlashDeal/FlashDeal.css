@@ -1,0 +1,55 @@
+.flashDealHideScrollbar {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.flashDealHideScrollbar::-webkit-scrollbar {
+  height: 0;
+  width: 0;
+  display: none; /* Chrome/Safari */
+}
+
+.flashDealProgressFill {
+  transition: width 500ms ease;
+}
+
+.flashDealSwapWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2ch;
+  line-height: 1;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+.flashDealSwapNumber {
+  display: inline-block;
+  line-height: 1;
+  transform-origin: center center;
+}
+
+.flashDealSwapNumberTick {
+  animation: flashDealNumberTick 220ms ease;
+}
+
+@keyframes flashDealNumberTick {
+  from {
+    transform: translateY(12%) scale(0.96);
+    opacity: 0.85;
+  }
+  to {
+    transform: translateY(0%) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flashDealProgressFill {
+    transition: none;
+  }
+
+  .flashDealSwapNumberTick {
+    animation: none;
+  }
+}

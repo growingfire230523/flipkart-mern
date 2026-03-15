@@ -4,7 +4,7 @@ import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import DownloadIcon from '@mui/icons-material/Download';
 
-const SecondaryDropDownMenu = () => {
+const SecondaryDropDownMenu = ({ open = false }) => {
 
     const navs = [
         {
@@ -35,7 +35,16 @@ const SecondaryDropDownMenu = () => {
     ]
 
     return (
-        <div className="absolute w-60 -right-2 top-9 bg-white shadow-2xl rounded flex-col text-sm">
+        <div
+            aria-hidden={!open}
+            className={
+                `absolute w-60 -right-2 top-9 bg-white shadow-2xl rounded flex-col text-sm ` +
+                `transform-gpu origin-top transition-all duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none ` +
+                (open
+                    ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
+                    : 'opacity-0 -translate-y-1 scale-95 pointer-events-none')
+            }
+        >
 
             {navs.map((item, i) => {
 

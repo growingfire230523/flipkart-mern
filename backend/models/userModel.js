@@ -5,6 +5,19 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
+    authProvider: {
+        type: String,
+        enum: ['local', 'google', 'facebook'],
+        default: 'local',
+    },
+    googleId: {
+        type: String,
+        index: true,
+    },
+    facebookId: {
+        type: String,
+        index: true,
+    },
     name: {
         type: String,
         required: [true, "Please Enter Your Name"],
@@ -16,11 +29,16 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        required: [true, "Please Enter Gender"]
+        required: function () {
+            return this.authProvider === 'local';
+        },
+        default: 'Not specified',
     },
     password: {
         type: String,
-        required: [true, "Please Enter Your Password"],
+        required: function () {
+            return this.authProvider === 'local';
+        },
         minLength: [8, "Password should have atleast 8 chars"],
         select: false,
     },
@@ -42,11 +60,72 @@ const userSchema = new mongoose.Schema({
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+
+    phone: {
+        type: String,
+        unique: true,
+        sparse: true,
+        index: true,
+    },
+    phoneVerified: {
+        type: Boolean,
+        default: false,
+    },
+    pendingPhone: {
+        type: String,
+    },
+    phoneOtp: {
+        hash: String,
+        expiresAt: Date,
+        purpose: {
+            type: String,
+            enum: ['login', 'link'],
+        },
+        lastSentAt: Date,
+        sendWindowStart: Date,
+        sendCount: {
+            type: Number,
+            default: 0,
+        },
+        verifyAttempts: {
+            type: Number,
+            default: 0,
+        },
+    },
+
+    whatsappTransactionalOptIn: {
+        type: Boolean,
+        default: false,
+    },
+    whatsappTransactionalOptInAt: {
+        type: Date,
+        default: null,
+    },
+    whatsappPromoOptIn: {
+        type: Boolean,
+        default: false,
+    },
+    whatsappPromoOptInAt: {
+        type: Date,
+        default: null,
+    },
+    defaultShippingAddress: {
+        address: { type: String },
+        city: { type: String },
+        state: { type: String },
+        country: { type: String },
+        pincode: { type: String },
+        phoneNo: { type: String },
+    },
 });
 
 userSchema.pre("save", async function (next) {
 
     if (!this.isModified("password")) {
+        next();
+    }
+
+    if (!this.password) {
         next();
     }
 

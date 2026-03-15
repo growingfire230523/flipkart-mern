@@ -1,7 +1,17 @@
-import { ADD_TO_WISHLIST, REMOVE_FROM_WISHLIST } from "../constants/wishlistConstants";
+import { ADD_TO_WISHLIST, CLEAR_WISHLIST, REMOVE_FROM_WISHLIST, SET_WISHLIST_ITEMS } from "../constants/wishlistConstants";
 
 export const wishlistReducer = (state = { wishlistItems: [] }, { type, payload }) => {
     switch (type) {
+        case SET_WISHLIST_ITEMS:
+            return {
+                ...state,
+                wishlistItems: Array.isArray(payload) ? payload : [],
+            };
+        case CLEAR_WISHLIST:
+            return {
+                ...state,
+                wishlistItems: [],
+            };
         case ADD_TO_WISHLIST:
             const item = payload;
             const itemExist = state.wishlistItems.find((i) => i.product === item.product);

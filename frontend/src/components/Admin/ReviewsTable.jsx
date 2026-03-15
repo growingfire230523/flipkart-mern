@@ -62,7 +62,19 @@ const ReviewsTable = () => {
             align: "left",
             headerAlign: "left",
             renderCell: (params) => {
-                return <Rating readOnly value={params.row.rating} size="small" precision={0.5} />
+                return (
+                    <Rating
+                        readOnly
+                        value={params.row.rating}
+                        size="small"
+                        precision={0.5}
+                        sx={{
+                            '& .MuiRating-iconFilled': { color: '#d6b36a' },
+                            '& .MuiRating-iconHover': { color: '#d6b36a' },
+                            '& .MuiRating-iconEmpty': { color: 'rgba(36,23,26,0.20)' },
+                        }}
+                    />
+                );
             }
         },
         {
@@ -104,9 +116,15 @@ const ReviewsTable = () => {
             {loading && <BackdropLoader />}
             <div className="flex justify-between items-center gap-2 sm:gap-12">
                 <h1 className="text-lg font-medium uppercase">reviews</h1>
-                <input type="text" placeholder="Product ID" value={productId} onChange={(e) => setProductId(e.target.value)} className="outline-none border-0 rounded p-2 w-full shadow hover:shadow-lg" />
+                <input
+                    type="text"
+                    placeholder="Product ID"
+                    value={productId}
+                    onChange={(e) => setProductId(e.target.value)}
+                    className="outline-none rounded p-2 w-full shadow-sm border border-gray-200 bg-white/70 text-primary-darkBlue placeholder:text-primary-grey focus:border-primary-blue"
+                />
             </div>
-            <div className="bg-white rounded-xl shadow-lg w-full" style={{ height: 450 }}>
+            <div className="bg-white/80 border border-gray-200 rounded-xl shadow-sm w-full" style={{ height: 450 }}>
 
                 <DataGrid
                     rows={rows}
@@ -116,6 +134,17 @@ const ReviewsTable = () => {
                     sx={{
                         boxShadow: 0,
                         border: 0,
+                        '& .MuiDataGrid-columnHeaders': {
+                            backgroundColor: 'rgba(255,255,255,0.6)',
+                            color: '#24171a',
+                            borderBottom: '1px solid rgba(0,0,0,0.08)',
+                        },
+                        '& .MuiDataGrid-row:hover': {
+                            backgroundColor: 'rgba(183,110,121,0.06)',
+                        },
+                        '& .MuiDataGrid-footerContainer': {
+                            borderTop: '1px solid rgba(0,0,0,0.08)',
+                        },
                     }}
                 />
             </div>

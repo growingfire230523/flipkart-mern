@@ -23,7 +23,7 @@ const Stepper = ({ activeStep, children }) => {
         },
         {
             label: "PAYMENT OPTIONS",
-            desc: <p className="font-medium text-sm">Paytm</p>
+            desc: <p className="font-medium text-sm">Razorpay</p>
         }
     ]
 

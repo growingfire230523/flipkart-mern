@@ -4,10 +4,18 @@ import { addItemsToCart } from '../../actions/cartAction';
 import { removeFromSaveForLater } from '../../actions/saveForLaterAction';
 import { getDiscount } from '../../utils/functions';
 
-const SaveForLaterItem = ({ product, name, seller, price, cuttedPrice, image, stock, quantity }) => {
+const SaveForLaterItem = ({ cartItemId, product, name, seller, price, cuttedPrice, image, stock, quantity, size, volume, colorName, colorHex }) => {
 
     const dispatch = useDispatch();
     const { enqueueSnackbar } = useSnackbar();
+
+    const variantOpts = size || volume || colorHex || colorName
+        ? {
+            ...(size ? { size } : {}),
+            ...(volume ? { volume } : {}),
+            ...((colorHex || colorName) ? { color: { name: colorName, hex: colorHex } } : {}),
+        }
+        : undefined;
 
     const removeFromSaveForLaterHandler = (id) => {
         dispatch(removeFromSaveForLater(id));
@@ -15,8 +23,8 @@ const SaveForLaterItem = ({ product, name, seller, price, cuttedPrice, image, st
     }
 
     const moveToCartHandler = (id, quantity) => {
-        dispatch(addItemsToCart(id, quantity));
-        removeFromSaveForLaterHandler(id);
+        dispatch(addItemsToCart(id, quantity, variantOpts));
+        removeFromSaveForLaterHandler(cartItemId || id);
         enqueueSnackbar("Product Added To Cart", { variant: "success" });
     }
 
@@ -25,7 +33,7 @@ const SaveForLaterItem = ({ product, name, seller, price, cuttedPrice, image, st
 
             <div className="flex flex-col sm:flex-row gap-5 items-stretch w-full" href="#">
                 {/* <!-- product image --> */}
-                <div className="w-full sm:w-1/6 h-28 flex-shrink-0">
+                <div className="w-full sm:w-1/6 h-32 sm:h-36 flex-shrink-0">
                     <img draggable="false" className="h-full w-full object-contain" src={image} alt={name} />
                 </div>
                 {/* <!-- product image --> */}
@@ -37,6 +45,9 @@ const SaveForLaterItem = ({ product, name, seller, price, cuttedPrice, image, st
                         <div className="flex flex-col gap-0.5 w-11/12 sm:w-full">
                             <p>{name.length > 50 ? `${name.substring(0, 50)}...` : name}</p>
                             <span className="text-sm text-gray-500">Seller: {seller}</span>
+                            {size ? <span className="text-sm text-gray-500">Size: {size}</span> : null}
+                            {volume ? <span className="text-sm text-gray-500">Volume: {volume}</span> : null}
+                            {colorName ? <span className="text-sm text-gray-500">Shade: {colorName}</span> : null}
                         </div>
                     </div>
                     {/* <!-- product title --> */}
@@ -63,7 +74,7 @@ const SaveForLaterItem = ({ product, name, seller, price, cuttedPrice, image, st
                 </div>
                 {/* <!-- quantity --> */}
                 <button onClick={() => moveToCartHandler(product, quantity)} className="sm:ml-4 font-medium hover:text-primary-blue">MOVE TO CART</button>
-                <button onClick={() => removeFromSaveForLaterHandler(product)} className="font-medium hover:text-red-600">REMOVE</button>
+                <button onClick={() => removeFromSaveForLaterHandler(cartItemId || product)} className="font-medium hover:text-red-600">REMOVE</button>
             </div>
             {/* <!-- move to cart --> */}
 

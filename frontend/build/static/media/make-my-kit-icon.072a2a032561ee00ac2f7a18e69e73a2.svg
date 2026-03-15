@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Make my kit">
+  <title>Make my kit</title>
+  <!-- Simple vector approximation of the provided makeup-kit icon -->
+  <rect x="96" y="196" width="320" height="240" rx="44" fill="#F39AAC"/>
+  <rect x="96" y="250" width="320" height="64" rx="32" fill="#D8647D"/>
+  <path d="M176 196c0-53 35-96 80-96s80 43 80 96h-32c0-35-22-64-48-64s-48 29-48 64h-32z" fill="#E9728B"/>
+
+  <!-- Brush -->
+  <rect x="148" y="268" width="28" height="168" rx="14" fill="#D8647D"/>
+  <rect x="148" y="318" width="28" height="44" rx="14" fill="#8A2E4B"/>
+  <path d="M162 230c26 0 46 20 46 46 0 16-7 31-19 40-8 6-18 10-27 10-9 0-19-4-27-10-12-9-19-24-19-40 0-26 20-46 46-46z" fill="#F9DEC6"/>
+
+  <!-- Lipstick -->
+  <rect x="228" y="290" width="56" height="160" rx="22" fill="#CF5574"/>
+  <rect x="220" y="344" width="72" height="48" rx="20" fill="#8A2E4B"/>
+  <path d="M256 240c18 0 32 14 32 32v36h-64v-36c0-18 14-32 32-32z" fill="#F5C9B7"/>
+
+  <!-- Compact -->
+  <circle cx="372" cy="340" r="76" fill="#8A2E4B"/>
+  <circle cx="372" cy="340" r="52" fill="#F9DEC6"/>
+  <rect x="322" y="404" width="140" height="44" rx="22" fill="#8A2E4B"/>
+</svg>

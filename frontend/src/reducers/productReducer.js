@@ -56,7 +56,27 @@ export const productsReducer = (state = { products: [] }, { type, payload }) => 
                 resultPerPage: payload.resultPerPage,
                 filteredProductsCount: payload.filteredProductsCount,
             };
-        case ADMIN_PRODUCTS_SUCCESS:
+        case ADMIN_PRODUCTS_SUCCESS: {
+            const products = Array.isArray(payload?.products) ? payload.products : Array.isArray(payload) ? payload : [];
+            const productsCount = Number.isFinite(payload?.productsCount)
+                ? payload.productsCount
+                : Array.isArray(payload)
+                    ? payload.length
+                    : products.length;
+
+            const filteredProductsCount = Number.isFinite(payload?.filteredProductsCount)
+                ? payload.filteredProductsCount
+                : productsCount;
+
+            return {
+                loading: false,
+                products,
+                adminProductsCount: productsCount,
+                adminFilteredProductsCount: filteredProductsCount,
+                adminResultPerPage: payload?.resultPerPage ?? payload?.limit,
+                adminPage: payload?.page,
+            };
+        }
         case SLIDER_PRODUCTS_SUCCESS:
             return {
                 loading: false,
@@ -128,6 +148,7 @@ export const newReviewReducer = (state = {}, { type, payload }) => {
         case NEW_REVIEW_FAIL:
             return {
                 ...state,
+                searchMeta: payload.searchMeta,
                 loading: false,
                 error: payload,
             };

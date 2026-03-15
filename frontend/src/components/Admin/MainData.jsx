@@ -1,72 +1,131 @@
-import { useEffect } from 'react';
-import Chart from 'chart.js/auto'
+import { useEffect, useState } from 'react';
+import 'chart.js/auto';
 import { Doughnut, Line, Pie, Bar } from 'react-chartjs-2';
-import { getAdminProducts } from '../../actions/productAction';
-import { useSelector, useDispatch } from 'react-redux';
-import { getAllOrders } from '../../actions/orderAction';
-import { getAllUsers } from '../../actions/userAction';
 import { categories } from '../../utils/constants';
 import MetaData from '../Layouts/MetaData';
+import axios from 'axios';
+import { useSnackbar } from 'notistack';
+
+const CT_COLORS = {
+    burgundy: '#6b1f2c',
+    rose: '#b76e79',
+    gold: '#d6b36a',
+    green: '#2a5f44',
+    cocoa: '#24171a',
+};
 
 const MainData = () => {
+    const { enqueueSnackbar } = useSnackbar();
 
-    const dispatch = useDispatch();
-
-    const { products } = useSelector((state) => state.products);
-    const { orders } = useSelector((state) => state.allOrders);
-    const { users } = useSelector((state) => state.users);
-
-    let outOfStock = 0;
-
-    products?.forEach((item) => {
-        if (item.stock === 0) {
-            outOfStock += 1;
-        }
-    });
+    const [dashboardStats, setDashboardStats] = useState(null);
+    const [dealEndsAt, setDealEndsAt] = useState(null);
+    const [dealOfDayEndsAt, setDealOfDayEndsAt] = useState(null);
+    const [mailListCount, setMailListCount] = useState(0);
+    const [dealTimer, setDealTimer] = useState('');
+    const [dealOfDayTimer, setDealOfDayTimer] = useState('');
 
     useEffect(() => {
-        dispatch(getAdminProducts());
-        dispatch(getAllOrders());
-        dispatch(getAllUsers());
-    }, [dispatch]);
+        let mounted = true;
 
-    let totalAmount = orders?.reduce((total, order) => total + order.totalPrice, 0);
+        const loadDashboardStats = async () => {
+            try {
+                const { data } = await axios.get('/api/v1/admin/dashboard/stats');
+                if (!mounted) return;
+                setDashboardStats(data || null);
+            } catch (e) {
+                if (!mounted) return;
+                enqueueSnackbar(e?.response?.data?.message || e.message || 'Failed to load dashboard stats', { variant: 'error' });
+            }
+        };
 
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-    const date = new Date();
+        loadDashboardStats();
+        return () => { mounted = false; };
+    }, [enqueueSnackbar]);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const loadExtras = async () => {
+            try {
+                const [{ data: dealData }, { data: mailData }] = await Promise.all([
+                    axios.get('/api/v1/deals/config'),
+                    axios.get('/api/v1/admin/mailing-list'),
+                ]);
+
+                if (!mounted) return;
+                setDealEndsAt(dealData?.endsAt ? new Date(dealData.endsAt) : null);
+                setDealOfDayEndsAt(dealData?.dealOfDayEndsAt ? new Date(dealData.dealOfDayEndsAt) : null);
+                setMailListCount(Array.isArray(mailData?.entries) ? mailData.entries.length : 0);
+            } catch {
+                if (!mounted) return;
+            }
+        };
+
+        loadExtras();
+        return () => { mounted = false; };
+    }, []);
+
+    useEffect(() => {
+        const formatCountdown = (target) => {
+            if (!target || Number.isNaN(target.getTime())) return 'Not set';
+            const diff = target.getTime() - Date.now();
+            if (diff <= 0) return 'Ended';
+            const totalSeconds = Math.floor(diff / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const pad = (v) => String(v).padStart(2, '0');
+            return `${hours}h ${pad(minutes)}m ${pad(seconds)}s`;
+        };
+
+        const tick = () => {
+            setDealTimer(formatCountdown(dealEndsAt));
+            setDealOfDayTimer(formatCountdown(dealOfDayEndsAt));
+        };
+
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [dealEndsAt, dealOfDayEndsAt]);
+
+    const summary = dashboardStats?.summary || {};
+    const charts = dashboardStats?.charts || {};
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const currentYear = new Date().getFullYear();
+    const yearlySales = Array.isArray(charts?.yearlySales) ? charts.yearlySales : [];
+
     const lineState = {
         labels: months,
         datasets: [
             {
-                label: `Sales in ${date.getFullYear() - 2}`,
-                borderColor: '#8A39E1',
-                backgroundColor: '#8A39E1',
-                data: months.map((m, i) => orders?.filter((od) => new Date(od.createdAt).getMonth() === i && new Date(od.createdAt).getFullYear() === date.getFullYear() - 2).reduce((total, od) => total + od.totalPrice, 0)),
+                label: `Sales in ${currentYear - 2}`,
+                borderColor: CT_COLORS.burgundy,
+                backgroundColor: CT_COLORS.burgundy,
+                data: yearlySales.find((entry) => entry.year === currentYear - 2)?.monthly || Array(12).fill(0),
             },
             {
-                label: `Sales in ${date.getFullYear() - 1}`,
-                borderColor: 'orange',
-                backgroundColor: 'orange',
-                data: months.map((m, i) => orders?.filter((od) => new Date(od.createdAt).getMonth() === i && new Date(od.createdAt).getFullYear() === date.getFullYear() - 1).reduce((total, od) => total + od.totalPrice, 0)),
+                label: `Sales in ${currentYear - 1}`,
+                borderColor: CT_COLORS.gold,
+                backgroundColor: CT_COLORS.gold,
+                data: yearlySales.find((entry) => entry.year === currentYear - 1)?.monthly || Array(12).fill(0),
             },
             {
-                label: `Sales in ${date.getFullYear()}`,
-                borderColor: '#4ade80',
-                backgroundColor: '#4ade80',
-                data: months.map((m, i) => orders?.filter((od) => new Date(od.createdAt).getMonth() === i && new Date(od.createdAt).getFullYear() === date.getFullYear()).reduce((total, od) => total + od.totalPrice, 0)),
+                label: `Sales in ${currentYear}`,
+                borderColor: CT_COLORS.green,
+                backgroundColor: CT_COLORS.green,
+                data: yearlySales.find((entry) => entry.year === currentYear)?.monthly || Array(12).fill(0),
             },
         ],
     };
 
     const statuses = ['Processing', 'Shipped', 'Delivered'];
-
     const pieState = {
         labels: statuses,
         datasets: [
             {
-                backgroundColor: ['#9333ea', '#facc15', '#4ade80'],
-                hoverBackgroundColor: ['#a855f7', '#fde047', '#86efac'],
-                data: statuses.map((status) => orders?.filter((item) => item.orderStatus === status).length),
+                backgroundColor: [CT_COLORS.rose, CT_COLORS.gold, CT_COLORS.green],
+                hoverBackgroundColor: [CT_COLORS.rose, CT_COLORS.gold, CT_COLORS.green],
+                data: statuses.map((status) => Number(charts?.orderStatus?.[status] || 0)),
             },
         ],
     };
@@ -75,9 +134,12 @@ const MainData = () => {
         labels: ['Out of Stock', 'In Stock'],
         datasets: [
             {
-                backgroundColor: ['#ef4444', '#22c55e'],
-                hoverBackgroundColor: ['#dc2626', '#16a34a'],
-                data: [outOfStock, products.length - outOfStock],
+                backgroundColor: [CT_COLORS.rose, CT_COLORS.green],
+                hoverBackgroundColor: [CT_COLORS.rose, CT_COLORS.green],
+                data: [
+                    Number(charts?.stockBreakdown?.outOfStock || 0),
+                    Number(charts?.stockBreakdown?.inStock || 0),
+                ],
             },
         ],
     };
@@ -86,11 +148,11 @@ const MainData = () => {
         labels: categories,
         datasets: [
             {
-                label: "Products",
-                borderColor: '#9333ea',
-                backgroundColor: '#9333ea',
-                hoverBackgroundColor: '#6b21a8',
-                data: categories.map((cat) => products?.filter((item) => item.category === cat).length),
+                label: 'Products',
+                borderColor: CT_COLORS.burgundy,
+                backgroundColor: CT_COLORS.burgundy,
+                hoverBackgroundColor: CT_COLORS.burgundy,
+                data: categories.map((cat) => Number(charts?.productsByCategory?.[cat] || 0)),
             },
         ],
     };
@@ -99,43 +161,67 @@ const MainData = () => {
         <>
             <MetaData title="Admin Dashboard | Flipkart" />
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-6">
-                <div className="flex flex-col bg-purple-600 text-white gap-2 rounded-xl shadow-lg hover:shadow-xl p-6">
-                    <h4 className="text-gray-100 font-medium">Total Sales Amount</h4>
-                    <h2 className="text-2xl font-bold">₹{totalAmount?.toLocaleString()}</h2>
+            <div className="mb-4 sm:mb-6">
+                <h1 className="font-brandSerif text-2xl sm:text-3xl font-normal text-primary-darkBlue tracking-wide">
+                    Admin Dashboard
+                </h1>
+                <p className="mt-1 text-xs sm:text-sm text-primary-grey">
+                    Quick view of your store performance, deals and subscribers.
+                </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-6 text-sm">
+                <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-primary-blue gap-2 rounded-xl shadow-sm p-5">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Total Sales Amount</h4>
+                    <h2 className="text-2xl font-semibold text-primary-darkBlue">₹{Number(summary?.totalSalesAmount || 0).toLocaleString()}</h2>
                 </div>
-                <div className="flex flex-col bg-red-500 text-white gap-2 rounded-xl shadow-lg hover:shadow-xl p-6">
-                    <h4 className="text-gray-100 font-medium">Total Orders</h4>
-                    <h2 className="text-2xl font-bold">{orders?.length}</h2>
+                <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-primary-orange gap-2 rounded-xl shadow-sm p-5">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Total Orders</h4>
+                    <h2 className="text-2xl font-semibold text-primary-darkBlue">{Number(summary?.totalOrders || 0).toLocaleString()}</h2>
                 </div>
-                <div className="flex flex-col bg-yellow-500 text-white gap-2 rounded-xl shadow-lg hover:shadow-xl p-6">
-                    <h4 className="text-gray-100 font-medium">Total Products</h4>
-                    <h2 className="text-2xl font-bold">{products?.length}</h2>
+                <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-primary-yellow gap-2 rounded-xl shadow-sm p-5">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Total Products</h4>
+                    <h2 className="text-2xl font-semibold text-primary-darkBlue">{Number(summary?.totalProducts || 0).toLocaleString()}</h2>
                 </div>
-                <div className="flex flex-col bg-green-500 text-white gap-2 rounded-xl shadow-lg hover:shadow-xl p-6">
-                    <h4 className="text-gray-100 font-medium">Total Users</h4>
-                    <h2 className="text-2xl font-bold">{users?.length}</h2>
+                <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-primary-green gap-2 rounded-xl shadow-sm p-5">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Total Users</h4>
+                    <h2 className="text-2xl font-semibold text-primary-darkBlue">{Number(summary?.totalUsers || 0).toLocaleString()}</h2>
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-8 min-w-full">
-                <div className="bg-white rounded-xl h-auto w-full shadow-lg p-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-6 text-sm">
+                <div className="flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Flash Deal Ends In</h4>
+                    <p className="mt-2 text-base sm:text-lg font-semibold text-primary-darkBlue">{dealTimer || 'Not set'}</p>
+                </div>
+                <div className="flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Deal Of The Day Ends In</h4>
+                    <p className="mt-2 text-base sm:text-lg font-semibold text-primary-darkBlue">{dealOfDayTimer || 'Not set'}</p>
+                </div>
+                <div className="flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Mail List Subscribers</h4>
+                    <p className="mt-2 text-base sm:text-lg font-semibold text-primary-darkBlue">{Number(mailListCount || 0).toLocaleString()}</p>
+                </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-8 min-w-full text-sm">
+                <div className="bg-white border border-gray-200 rounded-xl h-auto w-full shadow-sm p-4">
                     <Line data={lineState} />
                 </div>
 
-                <div className="bg-white rounded-xl shadow-lg p-4 text-center">
-                    <span className="font-medium uppercase text-gray-800">Order Status</span>
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 text-center">
+                    <span className="text-xs sm:text-sm font-brandSerif uppercase tracking-wide text-primary-darkBlue">Order Status</span>
                     <Pie data={pieState} />
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-8 min-w-full mb-6">
-                <div className="bg-white rounded-xl h-auto w-full shadow-lg p-2">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-8 min-w-full mb-6 text-sm">
+                <div className="bg-white border border-gray-200 rounded-xl h-auto w-full shadow-sm p-4">
                     <Bar data={barState} />
                 </div>
 
-                <div className="bg-white rounded-xl shadow-lg p-4 text-center">
-                    <span className="font-medium uppercase text-gray-800">Stock Status</span>
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 text-center">
+                    <span className="text-xs sm:text-sm font-brandSerif uppercase tracking-wide text-primary-darkBlue">Stock Status</span>
                     <Doughnut data={doughnutState} />
                 </div>
             </div>

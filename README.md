@@ -92,3 +92,29 @@ Feel free to reach me through the below handles if you'd like to contact me.
 
 [![linkedin](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/jigar-sablee)
 [![instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/jigarsable.dev)
+
+## Local Search (Meilisearch)
+
+This repo supports Meilisearch-backed product search (typo tolerant + fast filters).
+
+- Start Meilisearch: `docker compose -f docker-compose.meili.yml up -d`
+- Configure env: copy `backend/config/config.env.example` → `backend/config/config.env` and set `MEILI_HOST` + `MEILI_API_KEY`
+- Reindex products into Meili: `npm run meili:reindex`
+
+Notes:
+- `/api/v1/products` uses Meilisearch when `MEILI_HOST` is set; otherwise it falls back to MongoDB search.
+- Suggestions endpoint: `/api/v1/products/suggest?keyword=air b`
+
+
+LEXI-CHAT : 
+
+User message → optionalAuth middleware → chatController
+  → Load/create ChatSession (MongoDB)
+  → Build system prompt (role-aware)
+  → getToolsForRole(userRole) → filter 20 tools
+  → OpenAI API call with tools
+  → If tool_calls: executeTool() → query DB/Meilisearch → feed results back
+  → Repeat up to 3 rounds
+  → Final text reply + product cards
+  → Save to ChatSession
+  → Return {reply, products, sessionId}

@@ -1,10 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import CampaignIcon from '@mui/icons-material/Campaign';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import GroupIcon from '@mui/icons-material/Group';
 import ReviewsIcon from '@mui/icons-material/Reviews';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import ImageIcon from '@mui/icons-material/Image';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import CloseIcon from '@mui/icons-material/Close';
@@ -19,6 +23,21 @@ const navMenu = [
         icon: <EqualizerIcon />,
         label: "Dashboard",
         ref: "/admin/dashboard",
+    },
+    {
+        icon: <LocalOfferIcon />,
+        label: "Deals",
+        ref: "/admin/deals",
+    },
+    {
+        icon: <ImageIcon />,
+        label: "Banners",
+        ref: "/admin/banners",
+    },
+    {
+        icon: <CampaignIcon />,
+        label: "Ads",
+        ref: "/admin/ads",
     },
     {
         icon: <ShoppingBagIcon />,
@@ -41,6 +60,11 @@ const navMenu = [
         ref: "/admin/users",
     },
     {
+        icon: <MailOutlineIcon />,
+        label: "Mail List",
+        ref: "/admin/mail-list",
+    },
+    {
         icon: <ReviewsIcon />,
         label: "Reviews",
         ref: "/admin/reviews",
@@ -56,7 +80,7 @@ const navMenu = [
     },
 ];
 
-const Sidebar = ({ activeTab, setToggleSidebar }) => {
+const Sidebar = ({ activeTab, setToggleSidebar, isMobile = false }) => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -70,18 +94,24 @@ const Sidebar = ({ activeTab, setToggleSidebar }) => {
         navigate("/login");
     }
 
-    return (
-        <aside className="sidebar z-10 sm:z-0 block min-h-screen fixed left-0 pb-14 max-h-screen w-3/4 sm:w-1/5 bg-gray-800 text-white overflow-x-hidden border-r">
-            <div className="flex items-center gap-3 bg-gray-700 p-2 rounded-lg shadow-lg my-4 mx-3.5">
+    const closeIfMobile = () => {
+        if (isMobile && typeof setToggleSidebar === 'function') {
+            setToggleSidebar(false);
+        }
+    };
+
+        return (
+		<aside className="sidebar z-[40] sm:z-0 block w-3/4 sm:w-72 bg-primary-darkBlue text-white overflow-x-hidden border-r border-white/10 fixed sm:sticky top-14 left-0 h-[calc(100vh-3.5rem)] pb-6">
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-lg shadow-lg my-4 mx-3.5">
                 <Avatar
                     alt="Avatar"
                     src={user.avatar.url}
                 />
                 <div className="flex flex-col gap-0">
                     <span className="font-medium text-lg">{user.name}</span>
-                    <span className="text-gray-300 text-sm">{user.email}</span>
+                    <span className="text-white/70 text-sm">{user.email}</span>
                 </div>
-                <button onClick={()=>setToggleSidebar(false)} className="sm:hidden bg-gray-800 ml-auto rounded-full w-10 h-10 flex items-center justify-center">
+                <button onClick={()=>setToggleSidebar(false)} className="sm:hidden bg-white/10 hover:bg-white/15 ml-auto rounded-full w-10 h-10 flex items-center justify-center">
                     <CloseIcon/>
                 </button>
             </div>
@@ -92,12 +122,12 @@ const Sidebar = ({ activeTab, setToggleSidebar }) => {
                     return (
                         <>
                             {label === "Logout" ? (
-                                <button onClick={handleLogout} className="hover:bg-gray-700 flex gap-3 items-center py-3 px-4 font-medium">
+                                <button onClick={() => { closeIfMobile(); handleLogout(); }} className="hover:bg-white/10 flex gap-3 items-center py-3 px-4 font-medium">
                                     <span>{icon}</span>
                                     <span>{label}</span>
                                 </button>
                             ) : (
-                                <Link to={ref} className={`${activeTab === index ? "bg-gray-700" : "hover:bg-gray-700"} flex gap-3 items-center py-3 px-4 font-medium`}>
+                                <Link onClick={closeIfMobile} to={ref} className={`${activeTab === index ? "bg-white/10" : "hover:bg-white/10"} flex gap-3 items-center py-3 px-4 font-medium`}>
                                     <span>{icon}</span>
                                     <span>{label}</span>
                                 </Link>
@@ -108,11 +138,11 @@ const Sidebar = ({ activeTab, setToggleSidebar }) => {
                 )}
             </div>
 
-            <div className="flex flex-col gap-1 bg-gray-700 p-3 rounded-lg shadow-lg mb-6 mt-28 mx-3.5 overflow-hidden">
+            <div className="flex flex-col gap-1 bg-white/5 border border-white/10 p-3 rounded-lg shadow-lg mb-6 mt-28 mx-3.5 overflow-hidden">
                 <h5>Developed with ❤️ by:</h5>
                 <div className="flex flex-col gap-0">
-                    <a href="https://www.linkedin.com/in/jigar-sable" target="_blank" rel="noreferrer" className="font-medium text-lg hover:text-blue-500">Jigar Sable</a>
-                    <a href="mailto:jigarsable21@gmail.com" className="text-gray-300 text-sm hover:text-blue-500">jigarsable21@gmail.com</a>
+                    <span className="font-medium text-lg">Himanshu Prajapati</span>
+                    <a href="mailto:himanshu4ey@gmail.com" className="text-white/70 text-sm hover:text-primary-yellow">himanshu4ey@gmail.com</a>
                 </div>
             </div>
         </aside>

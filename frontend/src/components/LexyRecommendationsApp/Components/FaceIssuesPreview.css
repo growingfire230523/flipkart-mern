@@ -1,0 +1,88 @@
+.facePreviewRoot {
+  width: 100%;
+}
+
+.facePreviewFrame {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #111;
+}
+
+.facePreviewImg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.facePreviewOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.issueRegion {
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
+}
+
+.issueRegion--acne {
+  fill: rgba(171, 71, 188, 0.18);
+  stroke: rgba(171, 71, 188, 0.85);
+}
+
+.issueRegion--shine {
+  fill: rgba(245, 196, 0, 0.16);
+  stroke: rgba(245, 196, 0, 0.9);
+}
+
+.issueRegion--dry {
+  fill: rgba(3, 169, 244, 0.14);
+  stroke: rgba(3, 169, 244, 0.9);
+}
+
+.issueDot {
+  fill: rgba(3, 169, 244, 0.75);
+  stroke: rgba(255, 255, 255, 0.65);
+  stroke-width: 1.5;
+}
+
+.facePreviewLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.swatch--acne {
+  background: rgba(171, 71, 188, 0.85);
+}
+
+.swatch--shine {
+  background: rgba(245, 196, 0, 0.95);
+}

@@ -28,24 +28,24 @@ const Sidebar = ({ activeTab }) => {
         <div className="hidden sm:flex flex-col gap-4 w-1/4 px-1">
 
             {/* <!-- profile card --> */}
-            <div className="flex items-center gap-4 p-3 bg-white rounded-sm shadow">
+            <div className="flex items-center gap-4 p-4 bg-white/70 backdrop-blur border border-gray-200 rounded-2xl shadow-sm">
                 {/* <!-- user icon --> */}
                 <div className="w-12 h-12 rounded-full">
                     <img draggable="false" className="h-full w-full object-cover rounded-full" src={user.avatar.url} alt="Avatar" />
                 </div>
                 {/* <!-- user icon --> */}
                 <div className="flex flex-col gap-1">
-                    <p className="text-xs">Hello,</p>
-                    <h2 className="font-medium">{user.name}</h2>
+                    <p className="text-xs text-primary-grey">Hello,</p>
+                    <h2 className="font-semibold text-primary-darkBlue">{user.name}</h2>
                 </div>
             </div>
             {/* <!-- profile card --> */}
 
             {/* <!-- nav tiles --> */}
-            <div className="flex flex-col bg-white rounded-sm shadow">
+            <div className="flex flex-col bg-white/70 backdrop-blur border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
 
                 {/* <!-- my orders tab --> */}
-                <div className="flex items-center gap-5 px-4 py-4 border-b">
+                <div className="flex items-center gap-4 px-5 py-4 border-b border-gray-200">
                     <span className="text-primary-blue"><FolderIcon /></span>
                     <Link className="flex w-full justify-between font-medium text-gray-500 hover:text-primary-blue" to="/orders">
                         MY ORDERS
@@ -55,31 +55,31 @@ const Sidebar = ({ activeTab }) => {
                 {/* <!-- my orders tab --> */}
 
                 {/* <!-- account settings tab --> */}
-                <div className="flex items-center gap-5 px-4 py-4">
+                <div className="flex items-center gap-4 px-5 py-4">
                     <span className="text-primary-blue"><PersonIcon /></span>
-                    <p className="flex w-full justify-between font-medium text-gray-500">ACCOUNT SETTINGS</p>
+                    <p className="flex w-full justify-between font-semibold text-primary-grey">ACCOUNT SETTINGS</p>
                 </div>
                 <div className="flex flex-col pb-3 border-b text-sm">
-                    <Link to="/account" className={`${activeTab === "profile" ? "bg-blue-50 text-primary-blue font-medium" : "hover:bg-blue-50 hover:text-primary-blue"} p-3 pl-14`}>Profile Information</Link>
-                    <Link className="p-3 pl-14 hover:bg-blue-50 hover:text-primary-blue" to="/">Manage Addresses</Link>
-                    <Link className="p-3 pl-14 hover:bg-blue-50 hover:text-primary-blue" to="/">PAN Card Information</Link>
+                    <Link to="/account" className={`${activeTab === "profile" ? "bg-primary-blue/5 text-primary-blue font-semibold" : "hover:bg-black/5 hover:text-primary-blue"} p-3 pl-14`}>Profile Information</Link>
+                    <Link to="/account/addresses" className={`${activeTab === "addresses" ? "bg-primary-blue/5 text-primary-blue font-semibold" : "hover:bg-black/5 hover:text-primary-blue"} p-3 pl-14`}>Manage Addresses</Link>
+                    <Link className="p-3 pl-14 hover:bg-black/5 hover:text-primary-blue" to="/">PAN Card Information</Link>
                 </div>
                 {/* <!-- account settings tab --> */}
 
                 {/* <!-- payments tab --> */}
-                <div className="flex items-center gap-5 px-4 py-4">
+                <div className="flex items-center gap-4 px-5 py-4">
                     <span className="text-primary-blue"><AccountBalanceWalletIcon /></span>
-                    <p className="flex w-full justify-between font-medium text-gray-500">PAYMENTS</p>
+                    <p className="flex w-full justify-between font-semibold text-primary-grey">PAYMENTS</p>
                 </div>
                 <div className="flex flex-col pb-3 border-b text-sm">
-                    <Link className="p-3 pl-14 hover:bg-blue-50 hover:text-primary-blue flex justify-between pr-6" to="/">Gift Cards <span className="font-medium text-primary-green">₹0</span></Link>
-                    <Link className="p-3 pl-14 hover:bg-blue-50 hover:text-primary-blue" to="/">Saved UPI</Link>
-                    <Link className="p-3 pl-14 hover:bg-blue-50 hover:text-primary-blue" to="/">Saved Cards</Link>
+                    <Link className="p-3 pl-14 hover:bg-black/5 hover:text-primary-blue flex justify-between pr-6" to="/">Gift Cards <span className="font-semibold text-primary-green">₹0</span></Link>
+                    <Link className="p-3 pl-14 hover:bg-black/5 hover:text-primary-blue" to="/">Saved UPI</Link>
+                    <Link className="p-3 pl-14 hover:bg-black/5 hover:text-primary-blue" to="/">Saved Cards</Link>
                 </div>
                 {/* <!-- payments tab --> */}
 
                 {/* <!-- my chats tab --> */}
-                <div className="flex items-center gap-5 px-4 py-4 border-b">
+                <div className="flex items-center gap-4 px-5 py-4 border-b border-gray-200">
                     <span className="text-primary-blue"><ChatIcon /></span>
                     <Link className="flex w-full justify-between font-medium text-gray-500 hover:text-primary-blue" to="/">
                         MY CHATS
@@ -89,20 +89,20 @@ const Sidebar = ({ activeTab }) => {
                 {/* <!-- my chats tab --> */}
 
                 {/* <!-- my stuff tab --> */}
-                <div className="flex items-center gap-5 px-4 py-4">
+                <div className="flex items-center gap-4 px-5 py-4">
                     <span className="text-primary-blue"><FolderSharedIcon /></span>
-                    <p className="flex w-full justify-between font-medium text-gray-500">MY STUFF</p>
+                    <p className="flex w-full justify-between font-semibold text-primary-grey">MY STUFF</p>
                 </div>
                 <div className="flex flex-col pb-3 border-b text-sm">
-                    <Link className="p-3 pl-14 hover:bg-blue-50 hover:text-primary-blue" to="/">My Coupons</Link>
-                    <Link className="p-3 pl-14 hover:bg-blue-50 hover:text-primary-blue" to="/">My Reviews & Ratings</Link>
-                    <Link className="p-3 pl-14 hover:bg-blue-50 hover:text-primary-blue" to="/">All Notifications</Link>
-                    <Link to="/wishlist" className={`${activeTab === "wishlist" ? "bg-blue-50 text-primary-blue font-medium" : "hover:bg-blue-50 hover:text-primary-blue"} p-3 pl-14`}>My Wishlist</Link>
+                    <Link className="p-3 pl-14 hover:bg-black/5 hover:text-primary-blue" to="/">My Coupons</Link>
+                    <Link className="p-3 pl-14 hover:bg-black/5 hover:text-primary-blue" to="/">My Reviews & Ratings</Link>
+                    <Link className="p-3 pl-14 hover:bg-black/5 hover:text-primary-blue" to="/">All Notifications</Link>
+                    <Link to="/wishlist" className={`${activeTab === "wishlist" ? "bg-primary-blue/5 text-primary-blue font-semibold" : "hover:bg-black/5 hover:text-primary-blue"} p-3 pl-14`}>My Wishlist</Link>
                 </div>
                 {/* <!-- my stuff tab --> */}
 
                 {/* <!-- logout tab --> */}
-                <div className="flex items-center gap-5 px-4 py-4 border-b">
+                <div className="flex items-center gap-4 px-5 py-4 border-b border-gray-200">
                     <span className="text-primary-blue"><PowerSettingsNewIcon /></span>
                     <div className="flex w-full justify-between font-medium text-gray-500 hover:text-primary-blue cursor-pointer" onClick={handleLogout}>
                         Logout
@@ -115,9 +115,9 @@ const Sidebar = ({ activeTab }) => {
             {/* <!-- nav tiles --> */}
 
             {/* <!-- frequenty visited tab --> */}
-            <div className="flex flex-col items-start gap-2 p-4 bg-white rounded-sm shadow">
-                <span className="text-xs font-medium">Frequently Visited:</span>
-                <div className="flex gap-2.5 text-xs text-gray-500">
+            <div className="flex flex-col items-start gap-2 p-4 bg-white/70 backdrop-blur border border-gray-200 rounded-2xl shadow-sm">
+                <span className="text-xs font-semibold text-primary-darkBlue">Frequently Visited</span>
+                <div className="flex gap-2.5 text-xs text-primary-grey">
                     <Link to="/password/update">Change Password</Link>
                     <Link to="/orders">Track Order</Link>
                     <Link to="/">Help Center</Link>

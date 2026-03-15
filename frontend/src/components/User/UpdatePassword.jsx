@@ -33,12 +33,7 @@ const UpdatePassword = () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.set("oldPassword", oldPassword);
-        formData.set("newPassword", newPassword);
-        formData.set("confirmPassword", confirmPassword);
-
-        dispatch(updatePassword(formData));
+        dispatch(updatePassword({ oldPassword, newPassword, confirmPassword }));
     }
 
     useEffect(() => {
@@ -57,10 +52,10 @@ const UpdatePassword = () => {
 
     return (
         <>
-            <MetaData title="Password Update | Flipkart" />
+            <MetaData title="Update Password" />
 
             {loading && <BackdropLoader />}
-            <main className="w-full mt-12 sm:pt-20 sm:mt-0">
+            <main className="w-full mt-6">
 
                 {/* <!-- row --> */}
                 <div className="flex sm:w-4/6 sm:mt-4 m-auto mb-7 bg-white shadow-lg">
@@ -73,7 +68,7 @@ const UpdatePassword = () => {
                     {/* <!-- signup column --> */}
                     <div className="flex-1 overflow-hidden">
 
-                        <h2 className="text-center text-2xl font-medium mt-6 text-gray-800">Update Password</h2>
+                        <h2 className="text-center text-2xl font-brandSerif font-normal mt-6 text-gray-800">Update Password</h2>
                         {/* <!-- personal info procedure container --> */}
                         <form
                             onSubmit={updatePasswordSubmitHandler}

@@ -157,3 +157,69 @@ export const deleteOrder = (id) => async (dispatch) => {
 export const clearErrors = () => (dispatch) => {
     dispatch({ type: CLEAR_ERRORS });
 }
+
+// ── Cancel Order (customer) ────────────────────────────────────────
+export const cancelOrder = (id, reason) => async (dispatch) => {
+    try {
+        dispatch({ type: "CANCEL_ORDER_REQUEST" });
+        const { data } = await axios.put(`/api/v1/order/${id}/cancel`, { reason }, { headers: { "Content-Type": "application/json" } });
+        dispatch({ type: "CANCEL_ORDER_SUCCESS", payload: data.success });
+    } catch (error) {
+        dispatch({ type: "CANCEL_ORDER_FAIL", payload: error.response?.data?.message || error.message });
+    }
+};
+
+// ── Request Return (customer) ──────────────────────────────────────
+export const requestReturn = (id, body) => async (dispatch) => {
+    try {
+        dispatch({ type: "RETURN_ORDER_REQUEST" });
+        const { data } = await axios.post(`/api/v1/order/${id}/return`, body, { headers: { "Content-Type": "application/json" } });
+        dispatch({ type: "RETURN_ORDER_SUCCESS", payload: data.success });
+    } catch (error) {
+        dispatch({ type: "RETURN_ORDER_FAIL", payload: error.response?.data?.message || error.message });
+    }
+};
+
+// ── Get Tracking ───────────────────────────────────────────────────
+export const getTracking = (id) => async (dispatch) => {
+    try {
+        dispatch({ type: "TRACKING_REQUEST" });
+        const { data } = await axios.get(`/api/v1/order/${id}/tracking`);
+        dispatch({ type: "TRACKING_SUCCESS", payload: data });
+    } catch (error) {
+        dispatch({ type: "TRACKING_FAIL", payload: error.response?.data?.message || error.message });
+    }
+};
+
+// ── Admin: Create Shipment ─────────────────────────────────────────
+export const createShipment = (id, body) => async (dispatch) => {
+    try {
+        dispatch({ type: "CREATE_SHIPMENT_REQUEST" });
+        const { data } = await axios.post(`/api/v1/admin/order/${id}/ship`, body || {}, { headers: { "Content-Type": "application/json" } });
+        dispatch({ type: "CREATE_SHIPMENT_SUCCESS", payload: data });
+    } catch (error) {
+        dispatch({ type: "CREATE_SHIPMENT_FAIL", payload: error.response?.data?.message || error.message });
+    }
+};
+
+// ── Admin: Process Return ──────────────────────────────────────────
+export const processReturn = (id, body) => async (dispatch) => {
+    try {
+        dispatch({ type: "PROCESS_RETURN_REQUEST" });
+        const { data } = await axios.put(`/api/v1/admin/order/${id}/return`, body, { headers: { "Content-Type": "application/json" } });
+        dispatch({ type: "PROCESS_RETURN_SUCCESS", payload: data.success });
+    } catch (error) {
+        dispatch({ type: "PROCESS_RETURN_FAIL", payload: error.response?.data?.message || error.message });
+    }
+};
+
+// ── Admin: Complete Refund ─────────────────────────────────────────
+export const completeRefund = (id, body) => async (dispatch) => {
+    try {
+        dispatch({ type: "REFUND_ORDER_REQUEST" });
+        const { data } = await axios.put(`/api/v1/admin/order/${id}/refund`, body || {}, { headers: { "Content-Type": "application/json" } });
+        dispatch({ type: "REFUND_ORDER_SUCCESS", payload: data.success });
+    } catch (error) {
+        dispatch({ type: "REFUND_ORDER_FAIL", payload: error.response?.data?.message || error.message });
+    }
+};

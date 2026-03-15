@@ -5,8 +5,17 @@ import { forgotPasswordReducer, profileReducer, userReducer, allUsersReducer, us
 import { newProductReducer, newReviewReducer, productDetailsReducer, productReducer, productsReducer, productReviewsReducer, reviewReducer } from './reducers/productReducer';
 import { cartReducer } from './reducers/cartReducer';
 import { saveForLaterReducer } from './reducers/saveForLaterReducer';
-import { allOrdersReducer, myOrdersReducer, newOrderReducer, orderDetailsReducer, orderReducer, paymentStatusReducer } from './reducers/orderReducer';
+import { allOrdersReducer, myOrdersReducer, newOrderReducer, orderDetailsReducer, orderReducer, paymentStatusReducer, trackingReducer, cancelOrderReducer, returnOrderReducer, createShipmentReducer } from './reducers/orderReducer';
 import { wishlistReducer } from './reducers/wishlistReducer';
+import { compareReducer } from './reducers/compareReducer';
+import {
+    getActiveUserId,
+    loadCartItemsFromStorageOrLegacy,
+    loadShippingInfoFromStorageOrLegacy,
+    loadSaveForLaterItemsFromStorageOrLegacy,
+    loadWishlistItemsFromStorageOrLegacy,
+    loadCompareItemsFromStorage,
+} from './utils/cartStorage';
 
 const reducer = combineReducers({
     user: userReducer,
@@ -23,6 +32,10 @@ const reducer = combineReducers({
     orderDetails: orderDetailsReducer,
     allOrders: allOrdersReducer,
     order: orderReducer,
+    tracking: trackingReducer,
+    cancelOrder: cancelOrderReducer,
+    returnOrder: returnOrderReducer,
+    createShipment: createShipmentReducer,
     newProduct: newProductReducer,
     product: productReducer,
     users: allUsersReducer,
@@ -30,26 +43,24 @@ const reducer = combineReducers({
     reviews: productReviewsReducer,
     review: reviewReducer,
     wishlist: wishlistReducer,
+    compare: compareReducer,
 });
+
+const activeUserId = getActiveUserId();
 
 let initialState = {
     cart: {
-        cartItems: localStorage.getItem('cartItems')
-            ? JSON.parse(localStorage.getItem('cartItems'))
-            : [],
-        shippingInfo: localStorage.getItem("shippingInfo")
-            ? JSON.parse(localStorage.getItem("shippingInfo"))
-            : {},
+        cartItems: loadCartItemsFromStorageOrLegacy(activeUserId),
+        shippingInfo: loadShippingInfoFromStorageOrLegacy(activeUserId),
     },
     saveForLater: {
-        saveForLaterItems: localStorage.getItem('saveForLaterItems')
-            ? JSON.parse(localStorage.getItem('saveForLaterItems'))
-            : [],
+        saveForLaterItems: loadSaveForLaterItemsFromStorageOrLegacy(activeUserId),
     },
     wishlist: {
-        wishlistItems: localStorage.getItem('wishlistItems')
-            ? JSON.parse(localStorage.getItem('wishlistItems'))
-            : [],
+        wishlistItems: loadWishlistItemsFromStorageOrLegacy(activeUserId),
+    },
+    compare: {
+        compareItems: loadCompareItemsFromStorage(activeUserId),
     },
 };
 

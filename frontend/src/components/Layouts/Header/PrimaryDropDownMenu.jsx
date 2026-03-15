@@ -1,12 +1,9 @@
 import React from 'react';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ChatIcon from '@mui/icons-material/Chat';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -15,13 +12,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { logoutUser } from '../../../actions/userAction';
 
-const PrimaryDropDownMenu = ({ setTogglePrimaryDropDown, user }) => {
+const PrimaryDropDownMenu = ({ open = false, setTogglePrimaryDropDown, user }) => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
 
     const { wishlistItems } = useSelector((state) => state.wishlist);
+
+    const handleCloseMenu = () => {
+        if (typeof setTogglePrimaryDropDown === 'function') {
+            setTogglePrimaryDropDown(false);
+        }
+    };
 
     const handleLogout = () => {
         dispatch(logoutUser());
@@ -31,16 +34,6 @@ const PrimaryDropDownMenu = ({ setTogglePrimaryDropDown, user }) => {
     }
 
     const navs = [
-        {
-            title: "Supercoin Zone",
-            icon: <OfflineBoltIcon sx={{ fontSize: "18px" }} />,
-            redirect: "/",
-        },
-        {
-            title: "Flipkart Plus Zone",
-            icon: <AddCircleIcon sx={{ fontSize: "18px" }} />,
-            redirect: "/",
-        },
         {
             title: "Orders",
             icon: <ShoppingBagIcon sx={{ fontSize: "18px" }} />,
@@ -62,11 +55,6 @@ const PrimaryDropDownMenu = ({ setTogglePrimaryDropDown, user }) => {
             redirect: "/",
         },
         {
-            title: "Gift Cards",
-            icon: <AccountBalanceWalletIcon sx={{ fontSize: "18px" }} />,
-            redirect: "/",
-        },
-        {
             title: "Notifications",
             icon: <NotificationsIcon sx={{ fontSize: "18px" }} />,
             redirect: "/",
@@ -74,16 +62,35 @@ const PrimaryDropDownMenu = ({ setTogglePrimaryDropDown, user }) => {
     ]
 
     return (
-        <div className="absolute w-60 -left-24 ml-2 top-9 bg-white shadow-2xl rounded flex-col text-sm">
+        <div
+            aria-hidden={!open}
+            className={
+                `absolute w-60 -left-24 ml-2 top-9 bg-white shadow-2xl rounded flex-col text-sm ` +
+                `transform-gpu origin-top transition-all duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none ` +
+                (open
+                    ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
+                    : 'opacity-0 -translate-y-1 scale-95 pointer-events-none')
+            }
+        >
 
-            {user.role === "admin" &&
-                <Link className="pl-3 py-3.5 border-b flex gap-3 items-center hover:bg-gray-50 rounded-t" to="/admin/dashboard">
+            
+
+            {user?.role === "admin" &&
+                            <Link
+                                className="pl-3 py-3.5 border-b flex gap-3 items-center hover:bg-gray-50"
+                                to="/admin/dashboard"
+                                onClick={handleCloseMenu}
+                            >
                     <span className="text-primary-blue"><DashboardIcon sx={{ fontSize: "18px" }} /></span>
                     Admin Dashboard
                 </Link>
             }
 
-            <Link className="pl-3 py-3.5 border-b flex gap-3 items-center hover:bg-gray-50 rounded-t" to="/account">
+            <Link
+                className="pl-3 py-3.5 border-b flex gap-3 items-center hover:bg-gray-50 rounded-t"
+                to="/account"
+                onClick={handleCloseMenu}
+            >
                 <span className="text-primary-blue"><AccountCircleIcon sx={{ fontSize: "18px" }} /></span>
                 My Profile
             </Link>
@@ -94,7 +101,12 @@ const PrimaryDropDownMenu = ({ setTogglePrimaryDropDown, user }) => {
                 return (
                     <>
                         {title === "Wishlist" ? (
-                            <Link className="pl-3 py-3.5 border-b flex gap-3 items-center hover:bg-gray-50" to={redirect} key={i}>
+                            <Link
+                                className="pl-3 py-3.5 border-b flex gap-3 items-center hover:bg-gray-50"
+                                to={redirect}
+                                key={i}
+                                onClick={handleCloseMenu}
+                            >
                                 <span className="text-primary-blue">{icon}</span>
                                 {title}
                                 <span className="ml-auto mr-3 bg-gray-100 p-0.5 px-2 text-gray-600 rounded">
@@ -102,7 +114,12 @@ const PrimaryDropDownMenu = ({ setTogglePrimaryDropDown, user }) => {
                                 </span>
                             </Link>
                         ) : (
-                            <Link className="pl-3 py-3.5 border-b flex gap-3 items-center hover:bg-gray-50" to={redirect} key={i}>
+                            <Link
+                                className="pl-3 py-3.5 border-b flex gap-3 items-center hover:bg-gray-50"
+                                to={redirect}
+                                key={i}
+                                onClick={handleCloseMenu}
+                            >
                                 <span className="text-primary-blue">{icon}</span>
                                 {title}
                             </Link>

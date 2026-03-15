@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import MetaData from '../Layouts/MetaData';
-import MinCategory from '../Layouts/MinCategory';
+import CategoryNavBar from '../Layouts/CategoryNavBar';
 import Sidebar from '../User/Sidebar';
 import Product from './Product';
 
@@ -12,8 +12,8 @@ const Wishlist = () => {
         <>
             <MetaData title="Wishlist | Flipkart" />
 
-            <MinCategory />
-            <main className="w-full mt-12 sm:mt-0">
+            <CategoryNavBar />
+            <main className="w-full mt-2">
 
                 <div className="flex gap-3.5 sm:w-11/12 sm:mt-4 m-auto mb-7">
 

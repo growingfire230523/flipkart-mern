@@ -178,3 +178,77 @@ export const orderReducer = (state = {}, { type, payload }) => {
             return state;
     }
 };
+
+// ── Tracking reducer ───────────────────────────────────────────────
+
+export const trackingReducer = (state = { tracking: null }, { type, payload }) => {
+    switch (type) {
+        case 'TRACKING_REQUEST':
+            return { loading: true };
+        case 'TRACKING_SUCCESS':
+            return { loading: false, tracking: payload };
+        case 'TRACKING_FAIL':
+            return { loading: false, error: payload };
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+        default:
+            return state;
+    }
+};
+
+// ── Cancel order reducer ───────────────────────────────────────────
+
+export const cancelOrderReducer = (state = {}, { type, payload }) => {
+    switch (type) {
+        case 'CANCEL_ORDER_REQUEST':
+            return { loading: true };
+        case 'CANCEL_ORDER_SUCCESS':
+            return { loading: false, isCancelled: payload };
+        case 'CANCEL_ORDER_FAIL':
+            return { loading: false, error: payload };
+        case 'CANCEL_ORDER_RESET':
+            return { ...state, isCancelled: false };
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+        default:
+            return state;
+    }
+};
+
+// ── Return request reducer ─────────────────────────────────────────
+
+export const returnOrderReducer = (state = {}, { type, payload }) => {
+    switch (type) {
+        case 'RETURN_ORDER_REQUEST':
+            return { loading: true };
+        case 'RETURN_ORDER_SUCCESS':
+            return { loading: false, isReturned: payload };
+        case 'RETURN_ORDER_FAIL':
+            return { loading: false, error: payload };
+        case 'RETURN_ORDER_RESET':
+            return { ...state, isReturned: false };
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+        default:
+            return state;
+    }
+};
+
+// ── Create shipment reducer (admin) ────────────────────────────────
+
+export const createShipmentReducer = (state = {}, { type, payload }) => {
+    switch (type) {
+        case 'CREATE_SHIPMENT_REQUEST':
+            return { loading: true };
+        case 'CREATE_SHIPMENT_SUCCESS':
+            return { loading: false, isCreated: payload };
+        case 'CREATE_SHIPMENT_FAIL':
+            return { loading: false, error: payload };
+        case 'CREATE_SHIPMENT_RESET':
+            return { ...state, isCreated: false };
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+        default:
+            return state;
+    }
+};

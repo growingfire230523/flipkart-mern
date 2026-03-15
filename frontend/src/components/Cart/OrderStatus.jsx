@@ -24,15 +24,17 @@ const OrderStatus = () => {
         shippingInfo,
         orderItems: cartItems,
         totalPrice,
+        whatsappTransactionalOptIn: Boolean(shippingInfo?.whatsappTransactionalOptIn),
     }
 
     useEffect(() => {
         if (loading === false) {
             if(txn) {
-                if (txn.status === "TXN_SUCCESS") {
+                if (txn.status === "PAID" || txn.status === "CAPTURED") {
                     orderData.paymentInfo = {
                         id: txn.id,
                         status: txn.status,
+                        method: 'razorpay',
                     };
     
                     dispatch(newOrder(orderData));

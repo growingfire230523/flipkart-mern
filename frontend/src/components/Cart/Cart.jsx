@@ -19,7 +19,7 @@ const Cart = () => {
     return (
         <>
             <MetaData title="Shopping Cart | Flipkart" />
-            <main className="w-full mt-20">
+            <main className="w-full mt-4">
 
                 {/* <!-- row --> */}
                 <div className="flex flex-col sm:flex-row gap-3.5 w-full sm:w-11/12 mt-0 sm:mt-4 m-auto sm:mb-7">
@@ -36,7 +36,7 @@ const Cart = () => {
                             )}
 
                             {cartItems && cartItems.map((item) => (
-                                <CartItem {...item} inCart={true} />
+                                <CartItem {...item} inCart={true} key={item.cartItemId || item.product} />
                             )
                             )}
 
@@ -53,7 +53,7 @@ const Cart = () => {
                         <div className="flex flex-col mt-5 shadow bg-white">
                             <span className="font-medium text-lg px-2 sm:px-8 py-4 border-b">Saved For Later ({saveForLaterItems.length})</span>
                             {saveForLaterItems && saveForLaterItems.map((item) => (
-                                <SaveForLaterItem {...item} />
+                                <SaveForLaterItem {...item} key={item.cartItemId || item.product} />
                             )
                             )}
                         </div>

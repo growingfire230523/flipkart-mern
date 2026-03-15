@@ -28,13 +28,14 @@ module.exports = {
       pink: colors.pink,
       // custom colors
       primary: {
-        blue: '#2874f0',
-        lightGreen: '#14be47',
-        green: '#388e3c',
-        yellow: '#ff9f00',
-        orange: '#fb641b',
-        darkBlue: '#172337',
-        grey: '#878787',
+        // Brand palette (keeps the same token names to avoid refactors)
+        blue: '#875c43',      // primary brand accent
+        lightGreen: '#2f6f4e',
+        green: '#2a5f44',
+        yellow: '#d6b36a',    // champagne/gold
+        orange: '#b76e79',    // muted rose
+        darkBlue: '#24171a',  // deep cocoa-black
+        grey: '#7b6f6a',      // warm grey
       },
     },
     spacing: {
@@ -276,6 +277,7 @@ module.exports = {
         '"Courier New"',
         'monospace',
       ],
+      brandSerif: ['"Cormorant Garamond"', 'ui-serif', 'Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
     },
     fontSize: {
       xxs: ['11px', { lineHeight: '1rem' }],

@@ -30,8 +30,8 @@ const Register = () => {
 
     const { name, email, gender, password, cpassword } = user;
 
-    const [avatar, setAvatar] = useState();
-    const [avatarPreview, setAvatarPreview] = useState("preview.png");
+    const [avatar, setAvatar] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState('');
 
     const handleRegister = (e) => {
         e.preventDefault();
@@ -43,17 +43,14 @@ const Register = () => {
             enqueueSnackbar("Password Doesn't Match", { variant: "error" });
             return;
         }
-        if (!avatar) {
-            enqueueSnackbar("Select Avatar", { variant: "error" });
-            return;
-        }
-
         const formData = new FormData();
         formData.set("name", name);
         formData.set("email", email);
         formData.set("gender", gender);
         formData.set("password", password);
-        formData.set("avatar", avatar);
+        if (avatar) {
+            formData.set("avatar", avatar);
+        }
 
         dispatch(registerUser(formData));
     }
@@ -88,10 +85,10 @@ const Register = () => {
 
     return (
         <>
-            <MetaData title="Register | Flipkart" />
+            <MetaData title="Create Account" />
 
             {loading && <BackdropLoader />}
-            <main className="w-full mt-12 sm:pt-20 sm:mt-0">
+            <main className="w-full mt-6">
 
                 {/* <!-- row --> */}
                 <div className="flex sm:w-4/6 sm:mt-4 m-auto mb-7 bg-white shadow-lg">
@@ -189,10 +186,10 @@ const Register = () => {
                                             onChange={handleDataChange}
                                             className="hidden"
                                         />
-                                        Choose File
+                                        Upload Avatar (optional)
                                     </label>
                                 </div>
-                                <button type="submit" className="text-white py-3 w-full bg-primary-orange shadow hover:shadow-lg rounded-sm font-medium">Signup</button>
+                                <button type="submit" className="text-white py-3 w-full bg-[var(--lexy-maroon-75)] shadow hover:shadow-lg rounded-sm font-medium">Signup</button>
                                 <Link to="/login" className="hover:bg-gray-50 text-primary-blue text-center py-3 w-full shadow border rounded-sm font-medium">Existing User? Log in</Link>
                             </div>
 

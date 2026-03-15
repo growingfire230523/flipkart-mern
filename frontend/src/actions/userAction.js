@@ -37,6 +37,23 @@ import {
     ALL_USERS_REQUEST,
 } from '../constants/userConstants';
 import axios from 'axios';
+import { EMPTY_CART, SAVE_SHIPPING_INFO, SET_CART_ITEMS } from '../constants/cartConstants';
+import { SET_WISHLIST_ITEMS } from '../constants/wishlistConstants';
+import { SET_SAVE_FOR_LATER_ITEMS } from '../constants/saveForLaterConstants';
+import { SET_COMPARE_ITEMS } from '../constants/compareConstants';
+import {
+    loadCartItemsFromStorageOrLegacy,
+    loadShippingInfoFromStorageOrLegacy,
+    loadWishlistItemsFromStorageOrLegacy,
+    loadSaveForLaterItemsFromStorageOrLegacy,
+    loadCompareItemsFromStorage,
+    migrateLegacyCartStorage,
+    migrateLegacyWishlistStorage,
+    migrateLegacySaveForLaterStorage,
+    mergeGuestCompareIntoUserIfEmpty,
+    setActiveUserId,
+    getActiveUserId,
+} from '../utils/cartStorage';
 
 // Login User
 export const loginUser = (email, password) => async (dispatch) => {
@@ -56,10 +73,23 @@ export const loginUser = (email, password) => async (dispatch) => {
             config
         );
 
+        const userId = data?.user?._id;
+        setActiveUserId(userId);
+        migrateLegacyCartStorage(userId);
+        migrateLegacyWishlistStorage(userId);
+        migrateLegacySaveForLaterStorage(userId);
+        mergeGuestCompareIntoUserIfEmpty(userId);
+
         dispatch({
             type: LOGIN_USER_SUCCESS,
             payload: data.user,
         });
+
+        dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
 
     } catch (error) {
         dispatch({
@@ -87,10 +117,23 @@ export const registerUser = (userData) => async (dispatch) => {
             config
         );
 
+        const userId = data?.user?._id;
+        setActiveUserId(userId);
+        migrateLegacyCartStorage(userId);
+        migrateLegacyWishlistStorage(userId);
+        migrateLegacySaveForLaterStorage(userId);
+        mergeGuestCompareIntoUserIfEmpty(userId);
+
         dispatch({
             type: REGISTER_USER_SUCCESS,
             payload: data.user,
         });
+
+        dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
 
     } catch (error) {
         dispatch({
@@ -108,10 +151,23 @@ export const loadUser = () => async (dispatch) => {
 
         const { data } = await axios.get('/api/v1/me');
 
+        const userId = data?.user?._id;
+        setActiveUserId(userId);
+        migrateLegacyCartStorage(userId);
+        migrateLegacyWishlistStorage(userId);
+        migrateLegacySaveForLaterStorage(userId);
+        mergeGuestCompareIntoUserIfEmpty(userId);
+
         dispatch({
             type: LOAD_USER_SUCCESS,
             payload: data.user,
         });
+
+        dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
 
     } catch (error) {
         dispatch({
@@ -125,6 +181,19 @@ export const loadUser = () => async (dispatch) => {
 export const logoutUser = () => async (dispatch) => {
     try {
         await axios.get('/api/v1/logout');
+        // Clear in-memory cart for safety, but keep per-user storage so logging back in restores it.
+        dispatch({ type: EMPTY_CART });
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: {} });
+
+        setActiveUserId(null);
+
+        // Switch to guest cart if any exists in storage.
+        dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(null) });
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(null) });
+        dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(null) });
+        dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(null) });
+        dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(null) });
+
         dispatch({ type: LOGOUT_USER_SUCCESS });
     } catch (error) {
         dispatch({
@@ -171,16 +240,9 @@ export const updatePassword = (passwords) => async (dispatch) => {
 
         dispatch({ type: UPDATE_PASSWORD_REQUEST });
 
-        const config = {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        }
-
         const { data } = await axios.put(
             '/api/v1/password/update',
-            passwords,
-            config
+            passwords
         );
 
         dispatch({
@@ -203,16 +265,9 @@ export const forgotPassword = (email) => async (dispatch) => {
 
         dispatch({ type: FORGOT_PASSWORD_REQUEST });
 
-        const config = {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        }
-
         const { data } = await axios.post(
             '/api/v1/password/forgot',
             email,
-            config
         );
 
         dispatch({
@@ -234,16 +289,9 @@ export const resetPassword = (token, passwords) => async (dispatch) => {
 
         dispatch({ type: RESET_PASSWORD_REQUEST });
 
-        const config = {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        }
-
         const { data } = await axios.put(
             `/api/v1/password/reset/${token}`,
-            passwords,
-            config
+            passwords
         );
 
         dispatch({
@@ -352,4 +400,88 @@ export const deleteUser = (id) => async (dispatch) => {
 // Clear All Errors
 export const clearErrors = () => async (dispatch) => {
     dispatch({ type: CLEAR_ERRORS });
+};
+
+// Login with Google
+export const loginWithGoogle = (credential) => async (dispatch) => {
+    try {
+        dispatch({ type: LOGIN_USER_REQUEST });
+
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        };
+
+        const { data } = await axios.post(
+            '/api/v1/oauth/google',
+            { credential },
+            config
+        );
+
+        const userId = data?.user?._id;
+        setActiveUserId(userId);
+        migrateLegacyCartStorage(userId);
+        migrateLegacyWishlistStorage(userId);
+        migrateLegacySaveForLaterStorage(userId);
+        mergeGuestCompareIntoUserIfEmpty(userId);
+
+        dispatch({
+            type: LOGIN_USER_SUCCESS,
+            payload: data.user,
+        });
+
+        dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
+    } catch (error) {
+        dispatch({
+            type: LOGIN_USER_FAIL,
+            payload: error.response?.data?.message || error.message,
+        });
+    }
+};
+
+// Login with Phone OTP
+export const loginWithPhoneOtp = (phone, otp) => async (dispatch) => {
+    try {
+        dispatch({ type: LOGIN_USER_REQUEST });
+
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        };
+
+        const { data } = await axios.post(
+            '/api/v1/phone/login/verify',
+            { phone, otp },
+            config
+        );
+
+        const userId = data?.user?._id;
+        setActiveUserId(userId);
+        migrateLegacyCartStorage(userId);
+        migrateLegacyWishlistStorage(userId);
+        migrateLegacySaveForLaterStorage(userId);
+        mergeGuestCompareIntoUserIfEmpty(userId);
+
+        dispatch({
+            type: LOGIN_USER_SUCCESS,
+            payload: data.user,
+        });
+
+        dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
+    } catch (error) {
+        dispatch({
+            type: LOGIN_USER_FAIL,
+            payload: error.response?.data?.message || error.message,
+        });
+    }
 };

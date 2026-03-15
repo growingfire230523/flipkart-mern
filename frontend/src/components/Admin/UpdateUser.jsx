@@ -78,8 +78,8 @@ const UpdateUser = () => {
 
             {loading ? <Loading /> : (
                 <>
-                    <div className="flex flex-col bg-white shadow-lg rounded-lg mx-auto w-lg max-w-xl">
-                        <h2 className="text-center text-2xl font-medium mt-6 text-gray-800">Update Profile</h2>
+                    <div className="flex flex-col bg-white shadow-sm border border-gray-200 rounded-lg mx-auto w-lg max-w-xl">
+                        <h2 className="text-center text-2xl font-medium mt-6 text-primary-darkBlue">Update Profile</h2>
 
                         <form
                             onSubmit={updateUserSubmitHandler}

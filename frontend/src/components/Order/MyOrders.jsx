@@ -9,12 +9,19 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import SearchIcon from '@mui/icons-material/Search';
-import MinCategory from '../Layouts/MinCategory';
+import CategoryNavBar from '../Layouts/CategoryNavBar';
 import MetaData from '../Layouts/MetaData';
 
-const orderStatus = ["Processing", "Shipped", "Delivered"];
+const orderStatus = ["Placed", "Confirmed", "Processing", "Shipped", "In Transit", "Out for Delivery", "Delivered", "Cancelled", "Return Requested", "Returned", "Refunded"];
 const dt = new Date();
 const ordertime = [dt.getMonth(), dt.getFullYear() - 1, dt.getFullYear() - 2];
+
+const isPaymentDone = (paymentStatus, orderStatus) => {
+    const status = String(paymentStatus || '').toUpperCase();
+    if (!status) return false;
+    if (status === 'COD') return String(orderStatus || '') === 'Delivered';
+    return ['PAID', 'CAPTURED', 'SUCCESS', 'COMPLETED'].includes(status);
+};
 
 const MyOrders = () => {
 
@@ -108,8 +115,8 @@ const MyOrders = () => {
         <>
             <MetaData title="My Orders | Flipkart" />
 
-            <MinCategory />
-            <main className="w-full mt-16 sm:mt-0">
+            <CategoryNavBar />
+            <main className="w-full mt-2">
 
                 {/* <!-- row --> */}
                 <div className="flex gap-3.5 mt-2 sm:mt-6 sm:mx-3 m-auto mb-7">
@@ -123,7 +130,7 @@ const MyOrders = () => {
                             {/* <!-- filters header --> */}
                             <div className="flex items-center justify-between gap-5 px-4 py-2 border-b">
                                 <p className="text-lg font-medium">Filters</p>
-                                <span onClick={clearFilters} className="text-blue-600 font-medium text-sm uppercase cursor-pointer hover:text-blue-700">clear all</span>
+                                <span onClick={clearFilters} className="text-primary-blue font-medium text-sm uppercase cursor-pointer hover:text-primary-darkBlue">clear all</span>
                             </div>
 
                             {/* <!-- order status checkboxes --> */}
@@ -189,7 +196,7 @@ const MyOrders = () => {
                                 {/* <!-- searchbar --> */}
                                 <form onSubmit={searchOrders} className="flex items-center justify-between mx-1 sm:mx-0 sm:w-10/12 bg-white border rounded hover:shadow">
                                     <input value={search} onChange={(e) => setSearch(e.target.value)} type="search" name="search" placeholder="Search your orders here" className="p-2 text-sm outline-none flex-1 rounded-l" />
-                                    <button type="submit" className="h-full text-sm px-1 sm:px-4 py-2.5 text-white bg-primary-blue hover:bg-blue-600 rounded-r flex items-center gap-1">
+                                    <button type="submit" className="h-full text-sm px-1 sm:px-4 py-2.5 text-white bg-primary-blue hover:bg-primary-darkBlue rounded-r flex items-center gap-1">
                                         <SearchIcon sx={{ fontSize: "22px" }} />
                                         Search Orders
                                     </button>
@@ -206,11 +213,20 @@ const MyOrders = () => {
 
                                 {orders && filteredOrders.map((order) => {
 
-                                    const { _id, orderStatus, orderItems, createdAt, deliveredAt } = order;
+                                    const { _id, orderStatus, orderItems, createdAt, deliveredAt, paymentInfo, invoice } = order;
+                                    const canDownloadInvoice = Boolean(invoice?.url) && orderStatus === 'Delivered' && isPaymentDone(paymentInfo?.status, orderStatus);
 
                                     return (
                                         orderItems.map((item, index) => (
-                                            <OrderItem {...item} key={index} orderId={_id} orderStatus={orderStatus} createdAt={createdAt} deliveredAt={deliveredAt} />
+                                            <OrderItem
+                                                {...item}
+                                                key={index}
+                                                orderId={_id}
+                                                orderStatus={orderStatus}
+                                                createdAt={createdAt}
+                                                deliveredAt={deliveredAt}
+                                                canDownloadInvoice={canDownloadInvoice}
+                                            />
                                         ))
                                     )
                                 }).reverse()}

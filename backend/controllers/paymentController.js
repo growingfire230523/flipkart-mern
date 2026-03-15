@@ -1,159 +1,172 @@
 const asyncErrorHandler = require('../middlewares/asyncErrorHandler');
-// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const paytm = require('paytmchecksum');
-const https = require('https');
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
 const Payment = require('../models/paymentModel');
 const ErrorHandler = require('../utils/errorHandler');
-const { v4: uuidv4 } = require('uuid');
 
-// exports.processPayment = asyncErrorHandler(async (req, res, next) => {
-//     const myPayment = await stripe.paymentIntents.create({
-//         amount: req.body.amount,
-//         currency: "inr",
-//         metadata: {
-//             company: "Flipkart",
-//         },
-//     });
+// ── Razorpay instance (lazy-initialized) ───────────────────────────
+let razorpayInstance = null;
 
-//     res.status(200).json({
-//         success: true,
-//         client_secret: myPayment.client_secret, 
-//     });
-// });
+const getRazorpay = () => {
+    if (razorpayInstance) return razorpayInstance;
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) return null;
+    razorpayInstance = new Razorpay({ key_id: keyId, key_secret: keySecret });
+    return razorpayInstance;
+};
 
-// exports.sendStripeApiKey = asyncErrorHandler(async (req, res, next) => {
-//     res.status(200).json({ stripeApiKey: process.env.STRIPE_API_KEY });
-// });
+// ── Create Razorpay Order ──────────────────────────────────────────
+// POST /api/v1/payment/process
+exports.createRazorpayOrder = asyncErrorHandler(async (req, res, next) => {
+    const { amount } = req.body || {};
+    if (!amount) return next(new ErrorHandler('Amount is required.', 400));
 
-// Process Payment
-exports.processPayment = asyncErrorHandler(async (req, res, next) => {
+    const rp = getRazorpay();
+    if (!rp) return next(new ErrorHandler('Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.', 500));
 
-    const { amount, email, phoneNo } = req.body;
+    const options = {
+        amount: Math.round(Number(amount) * 100), // Razorpay expects paise
+        currency: 'INR',
+        receipt: `rcpt_${Date.now()}`,
+    };
 
-    var params = {};
+    const order = await rp.orders.create(options);
 
-    /* initialize an array */
-    params["MID"] = process.env.PAYTM_MID;
-    params["WEBSITE"] = process.env.PAYTM_WEBSITE;
-    params["CHANNEL_ID"] = process.env.PAYTM_CHANNEL_ID;
-    params["INDUSTRY_TYPE_ID"] = process.env.PAYTM_INDUSTRY_TYPE;
-    params["ORDER_ID"] = "oid" + uuidv4();
-    params["CUST_ID"] = process.env.PAYTM_CUST_ID;
-    params["TXN_AMOUNT"] = JSON.stringify(amount);
-    // params["CALLBACK_URL"] = `${req.protocol}://${req.get("host")}/api/v1/callback`;
-    params["CALLBACK_URL"] = `https://${req.get("host")}/api/v1/callback`;
-    params["EMAIL"] = email;
-    params["MOBILE_NO"] = phoneNo;
-
-    let paytmChecksum = paytm.generateSignature(params, process.env.PAYTM_MERCHANT_KEY);
-    paytmChecksum.then(function (checksum) {
-
-        let paytmParams = {
-            ...params,
-            "CHECKSUMHASH": checksum,
-        };
-
-        res.status(200).json({
-            paytmParams
-        });
-
-    }).catch(function (error) {
-        console.log(error);
+    res.status(200).json({
+        success: true,
+        order,
+        key: process.env.RAZORPAY_KEY_ID,
     });
 });
 
-// Paytm Callback
-exports.paytmResponse = (req, res, next) => {
+// ── Verify Razorpay Payment ────────────────────────────────────────
+// POST /api/v1/payment/verify
+exports.verifyPayment = asyncErrorHandler(async (req, res, next) => {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-    // console.log(req.body);
-
-    let paytmChecksum = req.body.CHECKSUMHASH;
-    delete req.body.CHECKSUMHASH;
-
-    let isVerifySignature = paytm.verifySignature(req.body, process.env.PAYTM_MERCHANT_KEY, paytmChecksum);
-    if (isVerifySignature) {
-        // console.log("Checksum Matched");
-
-        var paytmParams = {};
-
-        paytmParams.body = {
-            "mid": req.body.MID,
-            "orderId": req.body.ORDERID,
-        };
-
-        paytm.generateSignature(JSON.stringify(paytmParams.body), process.env.PAYTM_MERCHANT_KEY).then(function (checksum) {
-
-            paytmParams.head = {
-                "signature": checksum
-            };
-
-            /* prepare JSON string for request */
-            var post_data = JSON.stringify(paytmParams);
-
-            var options = {
-                /* for Staging */
-                hostname: 'securegw-stage.paytm.in',
-                /* for Production */
-                // hostname: 'securegw.paytm.in',
-                port: 443,
-                path: '/v3/order/status',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': post_data.length
-                }
-            };
-
-            // Set up the request
-            var response = "";
-            var post_req = https.request(options, function (post_res) {
-                post_res.on('data', function (chunk) {
-                    response += chunk;
-                });
-
-                post_res.on('end', function () {
-                    let { body } = JSON.parse(response);
-                    // let status = body.resultInfo.resultStatus;
-                    // res.json(body);
-                    addPayment(body);
-                    // res.redirect(`${req.protocol}://${req.get("host")}/order/${body.orderId}`)
-                    res.redirect(`https://${req.get("host")}/order/${body.orderId}`)
-                });
-            });
-
-            // post the data
-            post_req.write(post_data);
-            post_req.end();
-        });
-
-    } else {
-        console.log("Checksum Mismatched");
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return next(new ErrorHandler('Missing payment verification details.', 400));
     }
-}
 
-const addPayment = async (data) => {
-    try {
-        await Payment.create(data);
-    } catch (error) {
-        console.log("Payment Failed!");
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) return next(new ErrorHandler('Razorpay key secret not configured.', 500));
+
+    const expectedSignature = crypto
+        .createHmac('sha256', keySecret)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest('hex');
+
+    if (expectedSignature !== razorpay_signature) {
+        return next(new ErrorHandler('Payment signature verification failed.', 400));
     }
-}
 
+    // Store payment record
+    await Payment.create({
+        orderId: razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        signature: razorpay_signature,
+        status: 'PAID',
+        amount: req.body.amount || 0,
+        method: req.body.method || 'razorpay',
+    });
+
+    res.status(200).json({
+        success: true,
+        paymentId: razorpay_payment_id,
+        orderId: razorpay_order_id,
+    });
+});
+
+// ── Razorpay Webhook ───────────────────────────────────────────────
+// POST /api/v1/payment/webhook
+exports.razorpayWebhook = asyncErrorHandler(async (req, res, next) => {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+        return res.status(200).json({ status: 'ok', message: 'Webhook secret not configured, skipping.' });
+    }
+
+    const shasum = crypto.createHmac('sha256', webhookSecret);
+    shasum.update(JSON.stringify(req.body));
+    const digest = shasum.digest('hex');
+
+    const razorpaySignature = req.headers['x-razorpay-signature'];
+    if (digest !== razorpaySignature) {
+        return res.status(400).json({ error: 'Invalid webhook signature.' });
+    }
+
+    const event = req.body.event;
+    const payload = req.body.payload;
+
+    if (event === 'payment.captured') {
+        const payment = payload.payment?.entity;
+        if (payment) {
+            await Payment.findOneAndUpdate(
+                { paymentId: payment.id },
+                {
+                    status: 'CAPTURED',
+                    method: payment.method,
+                    amount: payment.amount / 100,
+                    currency: payment.currency,
+                },
+                { upsert: true, new: true }
+            );
+        }
+    } else if (event === 'payment.failed') {
+        const payment = payload.payment?.entity;
+        if (payment) {
+            await Payment.findOneAndUpdate(
+                { paymentId: payment.id },
+                { status: 'FAILED' },
+                { upsert: true, new: true }
+            );
+        }
+    }
+
+    res.status(200).json({ status: 'ok' });
+});
+
+// ── Get Payment Status ─────────────────────────────────────────────
+// GET /api/v1/payment/status/:id
 exports.getPaymentStatus = asyncErrorHandler(async (req, res, next) => {
-
-    const payment = await Payment.findOne({ orderId: req.params.id });
+    const payment = await Payment.findOne({
+        $or: [
+            { orderId: req.params.id },
+            { paymentId: req.params.id },
+        ]
+    });
 
     if (!payment) {
-        return next(new ErrorHandler("Payment Details Not Found", 404));
-    }
-
-    const txn = {
-        id: payment.txnId,
-        status: payment.resultInfo.resultStatus,
+        return next(new ErrorHandler('Payment Details Not Found', 404));
     }
 
     res.status(200).json({
         success: true,
-        txn,
+        txn: {
+            id: payment.paymentId,
+            status: payment.status,
+        },
     });
 });
+
+// ── Get Razorpay Key (public) ──────────────────────────────────────
+// GET /api/v1/payment/key
+exports.getRazorpayKey = asyncErrorHandler(async (req, res) => {
+    res.status(200).json({
+        success: true,
+        key: process.env.RAZORPAY_KEY_ID,
+    });
+});
+
+// ── Initiate Refund ────────────────────────────────────────────────
+// Called internally from shiprocketController when refund is needed
+exports.initiateRefund = async (razorpayPaymentId, amount) => {
+    const rp = getRazorpay();
+    if (!rp) throw new Error('Razorpay not configured');
+
+    const refund = await rp.payments.refund(razorpayPaymentId, {
+        amount: Math.round(Number(amount) * 100), // paise
+    });
+
+    return refund;
+};
