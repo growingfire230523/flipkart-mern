@@ -94,7 +94,26 @@ const getConfig = () => {
     };
 };
 
+const normalizeMetaRecipient = (to) => {
+    let value = String(to || '').trim();
+    if (!value) return '';
+    if (value.toLowerCase().startsWith('whatsapp:')) {
+        value = value.slice('whatsapp:'.length);
+    }
+    // Meta expects an international number without symbols (digits only).
+    return value.replace(/\D/g, '');
+};
+
+const isLogMode = () => String(process.env.WHATSAPP_MODE || '').toLowerCase() === 'log';
+
 const sendWhatsAppText = async ({ to, body, previewUrl = false }) => {
+    if (isLogMode()) {
+        console.log('[whatsapp] WHATSAPP_MODE=log (not sending)');
+        console.log('[whatsapp] to:', to);
+        console.log('[whatsapp] body:', body);
+        return { skipped: false, ok: true, logged: true };
+    }
+
     const cfg = getConfig();
     if (!cfg.enabled) return { skipped: true, reason: 'whatsapp_not_configured' };
 
@@ -130,9 +149,12 @@ const sendWhatsAppText = async ({ to, body, previewUrl = false }) => {
     // Default: Meta WhatsApp Business Cloud API
     const url = `https://graph.facebook.com/${cfg.graphVersion}/${cfg.phoneNumberId}/messages`;
 
+    const toMeta = normalizeMetaRecipient(to);
+    if (!toMeta) return { skipped: true, reason: 'missing_to' };
+
     const payload = {
         messaging_product: 'whatsapp',
-        to,
+        to: toMeta,
         type: 'text',
         text: {
             preview_url: Boolean(previewUrl),
@@ -152,6 +174,13 @@ const sendWhatsAppText = async ({ to, body, previewUrl = false }) => {
 };
 
 const sendWhatsAppTemplate = async ({ to, name, languageCode = 'en', components = [] }) => {
+    if (isLogMode()) {
+        console.log('[whatsapp] WHATSAPP_MODE=log (not sending template)');
+        console.log('[whatsapp] to:', to, '| template:', name, '| lang:', languageCode);
+        console.log('[whatsapp] components:', JSON.stringify(components));
+        return { skipped: false, ok: true, logged: true };
+    }
+
     const cfg = getConfig();
     if (!cfg.enabled) return { skipped: true, reason: 'whatsapp_not_configured' };
 
@@ -163,11 +192,14 @@ const sendWhatsAppTemplate = async ({ to, name, languageCode = 'en', components 
 
     if (!name) return { skipped: true, reason: 'missing_template_name' };
 
+    const toMeta = normalizeMetaRecipient(to);
+    if (!toMeta) return { skipped: true, reason: 'missing_to' };
+
     const url = `https://graph.facebook.com/${cfg.graphVersion}/${cfg.phoneNumberId}/messages`;
 
     const payload = {
         messaging_product: 'whatsapp',
-        to,
+        to: toMeta,
         type: 'template',
         template: {
             name,
@@ -187,8 +219,41 @@ const sendWhatsAppTemplate = async ({ to, name, languageCode = 'en', components 
     return { skipped: false, ...res };
 };
 
+const sendWhatsAppOtp = async ({ to, otp }) => {
+    if (isLogMode()) {
+        console.log('[whatsapp] WHATSAPP_MODE=log (not sending OTP)');
+        console.log('[whatsapp] to:', to, '| otp:', otp);
+        return { skipped: false, ok: true, logged: true };
+    }
+
+    const templateName = String(process.env.WHATSAPP_TEMPLATE_OTP || '').trim();
+    const languageCode = String(process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en').trim();
+
+    if (templateName) {
+        return sendWhatsAppTemplate({
+            to,
+            name: templateName,
+            languageCode,
+            components: [
+                {
+                    type: 'body',
+                    parameters: [{ type: 'text', text: String(otp) }],
+                },
+            ],
+        });
+    }
+
+    // Fallback: plain text (only when WHATSAPP_ALLOW_TEXT=true)
+    const cfg = getConfig();
+    if (!cfg.enabled) return { skipped: true, reason: 'whatsapp_not_configured' };
+
+    const body = `Your Lexy OTP is ${otp}. It expires in 10 minutes. Do not share this with anyone.`;
+    return sendWhatsAppText({ to, body });
+};
+
 module.exports = {
     getWhatsAppConfig: getConfig,
     sendWhatsAppText,
     sendWhatsAppTemplate,
+    sendWhatsAppOtp,
 };

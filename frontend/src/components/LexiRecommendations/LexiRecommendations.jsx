@@ -8,7 +8,7 @@ const LexiRecommendations = () => {
 
     return (
         <>
-            <MetaData title="Lexi Recommendations | Flipkart" />
+            <MetaData title="Milaari Recommendations" />
             <div className="fixed inset-0 overflow-y-auto">
                 <Home />
             </div>
@@ -16,7 +16,7 @@ const LexiRecommendations = () => {
                 <section className="w-full sm:max-w-5xl bg-[#fff9f7] rounded-3xl shadow-2xl border border-[var(--lexy-maroon-25)] overflow-hidden lexi-reco-window max-h-[86vh] flex flex-col">
                     <div className="flex items-start justify-between px-5 pt-4 pb-3 border-b border-[var(--lexy-maroon-10)]/60">
                         <div>
-                            <h1 className="font-brandSerif text-lg text-primary-darkBlue">LEXI Recommendations</h1>
+                            <h1 className="font-brandSerif text-lg text-primary-darkBlue">MILAARI Recommendations</h1>
                             <p className="mt-1 text-xs text-primary-grey">
                                 Fill your skin details to get personalized skincare &amp; makeup picks.
                             </p>
@@ -26,7 +26,7 @@ const LexiRecommendations = () => {
                             type="button"
                             onClick={() => navigate('/')}
                             className="ml-3 rounded-full p-1 text-primary-grey hover:bg-black/5 focus:outline-none"
-                            aria-label="Close Lexi Recommendations"
+                            aria-label="Close Milaari Recommendations"
                             title="Close"
                         >
                             <span className="block text-lg leading-none">×</span>

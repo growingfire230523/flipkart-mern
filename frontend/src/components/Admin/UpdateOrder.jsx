@@ -115,7 +115,7 @@ const UpdateOrder = () => {
 
     return (
         <>
-            <MetaData title="Admin: Update Order | Lexi" />
+            <MetaData title="Admin: Update Order | Milaari" />
 
             {loading ? <Loading /> : (
                 <>

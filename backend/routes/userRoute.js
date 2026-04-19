@@ -19,6 +19,8 @@ const {
     requestLinkPhoneOtp,
     verifyLinkPhoneOtp,
     updateDeliveryLocation,
+    requestPhoneRegisterOtp,
+    verifyPhoneRegisterOtp,
 } = require('../controllers/userController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
 
@@ -29,6 +31,8 @@ router.route('/login').post(loginUser);
 router.route('/oauth/google').post(loginWithGoogle);
 router.route('/phone/login/otp').post(requestPhoneLoginOtp);
 router.route('/phone/login/verify').post(verifyPhoneLoginOtp);
+router.route('/phone/register/otp').post(requestPhoneRegisterOtp);
+router.route('/phone/register/verify').post(verifyPhoneRegisterOtp);
 router.route('/logout').get(logoutUser);
 
 router.route('/me').get(isAuthenticatedUser, getUserDetails);

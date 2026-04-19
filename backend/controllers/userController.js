@@ -6,11 +6,27 @@ const sendToken = require('../utils/sendToken');
 const ErrorHandler = require('../utils/errorHandler');
 const sendEmail = require('../utils/sendEmail');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const cloudinary = require('cloudinary');
 const bcrypt = require('bcryptjs');
 const normalizePhone = require('../utils/normalizePhone');
 const sendSms = require('../utils/sendSms');
+const { sendWhatsAppOtp } = require('../services/whatsappClient');
 const { upsertMailingListEntry } = require('./mailingListController');
+
+// Send OTP to a phone number: tries WhatsApp first, falls back to SMS
+const sendOtpToPhone = async (phone, otp) => {
+    try {
+        const waResult = await sendWhatsAppOtp({ to: phone, otp });
+        if (!waResult?.skipped) return;
+    } catch (e) {
+        console.warn('[sendOtpToPhone] WhatsApp failed:', e.message);
+    }
+    const smsText = `Your Lexy OTP is ${otp}. It expires in 10 minutes.`;
+    await sendSms({ to: phone, message: smsText }).catch((e) =>
+        console.warn('[sendOtpToPhone] SMS fallback failed:', e.message)
+    );
+};
 
 const getFrontendBaseUrl = (req) => {
     const host = req.get('host');
@@ -742,7 +758,7 @@ exports.requestPhoneLoginOtp = asyncErrorHandler(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     const smsText = `Your Lexy login OTP is ${otp}. It expires in 10 minutes.`;
-    await sendSms({ to: normalizedPhone, message: smsText });
+    await sendOtpToPhone(normalizedPhone, otp);
 
     res.status(200).json({
         success: true,
@@ -837,7 +853,7 @@ exports.requestLinkPhoneOtp = asyncErrorHandler(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     const smsText = `Your Lexy verification OTP is ${otp}. It expires in 10 minutes.`;
-    await sendSms({ to: normalizedPhone, message: smsText });
+    await sendOtpToPhone(normalizedPhone, otp);
 
     res.status(200).json({ success: true, message: 'OTP sent to phone number.' });
 });
@@ -897,4 +913,97 @@ exports.verifyLinkPhoneOtp = asyncErrorHandler(async (req, res, next) => {
         message: 'Phone number verified successfully.',
         user,
     });
+});
+
+// ── Phone-first Registration ──────────────────────────────────────────────────
+
+// Step 1: Collect name + phone (+ optional email), send OTP via WhatsApp
+exports.requestPhoneRegisterOtp = asyncErrorHandler(async (req, res, next) => {
+    const defaultCountry = process.env.PHONE_DEFAULT_COUNTRY || 'IN';
+    const normalizedPhone = normalizePhone(req.body?.phone, defaultCountry);
+    const name = String(req.body?.name || '').trim();
+    const email = req.body?.email ? String(req.body.email).toLowerCase().trim() : '';
+
+    if (!normalizedPhone) return next(new ErrorHandler('Invalid phone number', 400));
+    if (name.length < 2) return next(new ErrorHandler('Please enter your full name (at least 2 characters)', 400));
+
+    const existingPhone = await User.findOne({ phone: normalizedPhone });
+    if (existingPhone) return next(new ErrorHandler('This phone number is already registered. Please login instead.', 409));
+
+    if (email) {
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) return next(new ErrorHandler('This email is already registered.', 409));
+    }
+
+    const otp = generateOtp();
+    const otpHash = await bcrypt.hash(otp, 10);
+
+    // Sign a short-lived token carrying the pending registration data — no DB write needed
+    const registrationToken = jwt.sign(
+        { _type: 'phone_register', phone: normalizedPhone, name, email, otpHash },
+        process.env.JWT_SECRET,
+        { expiresIn: '10m' }
+    );
+
+    await sendOtpToPhone(normalizedPhone, otp);
+
+    res.status(200).json({
+        success: true,
+        registrationToken,
+        message: 'OTP sent to your WhatsApp number.',
+    });
+});
+
+// Step 2: Verify OTP + create account
+exports.verifyPhoneRegisterOtp = asyncErrorHandler(async (req, res, next) => {
+    const registrationToken = String(req.body?.registrationToken || '').trim();
+    const otp = String(req.body?.otp || '').trim();
+
+    if (!registrationToken || !otp) return next(new ErrorHandler('Registration token and OTP are required', 400));
+
+    let payload;
+    try {
+        payload = jwt.verify(registrationToken, process.env.JWT_SECRET);
+    } catch {
+        return next(new ErrorHandler('OTP expired or invalid. Please request a new one.', 400));
+    }
+
+    if (payload._type !== 'phone_register') {
+        return next(new ErrorHandler('Invalid registration token', 400));
+    }
+
+    const { phone, name, email, otpHash } = payload;
+
+    const ok = await bcrypt.compare(otp, otpHash);
+    if (!ok) return next(new ErrorHandler('Invalid OTP', 400));
+
+    // Re-check uniqueness after the 10 min window
+    const existingPhone = await User.findOne({ phone });
+    if (existingPhone) return next(new ErrorHandler('This phone number is already registered. Please login.', 409));
+
+    if (email) {
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) return next(new ErrorHandler('This email is already registered.', 409));
+    }
+
+    const userData = {
+        name,
+        phone,
+        phoneVerified: true,
+        authProvider: 'phone',
+        avatar: { public_id: '', url: '' },
+    };
+    if (email) userData.email = email;
+
+    const user = await User.create(userData);
+
+    try {
+        if (email) {
+            await upsertMailingListEntry({ email, name, userId: user._id, source: 'signup' });
+        }
+    } catch {
+        // non-blocking
+    }
+
+    sendToken(user, 201, res);
 });

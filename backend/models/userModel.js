@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const userSchema = new mongoose.Schema({
     authProvider: {
         type: String,
-        enum: ['local', 'google', 'facebook'],
+        enum: ['local', 'google', 'facebook', 'phone'],
         default: 'local',
     },
     googleId: {
@@ -24,8 +24,11 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: [true, "Please Enter Your Email"],
+        required: function () {
+            return this.authProvider === 'local' || this.authProvider === 'google';
+        },
         unique: true,
+        sparse: true,
     },
     gender: {
         type: String,

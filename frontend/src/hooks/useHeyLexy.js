@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const STORAGE_KEY = 'lexyWakeWord:enabled';
-const WAKE_PHRASES = ['hey lexy', 'hey lexi', 'hey lexie', 'hay lexy', 'hay lexi', 'alexy', 'hey alexy'];
+const WAKE_PHRASES = ['hey milaari', 'hey milari', 'hey milaary', 'hay milaari', 'hey lexy', 'hey lexi', 'hey lexie', 'hay lexy', 'hay lexi', 'alexy', 'hey alexy'];
 
 const getSpeechCtor = () =>
     window.SpeechRecognition || window.webkitSpeechRecognition || null;

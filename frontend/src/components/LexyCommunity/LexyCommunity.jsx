@@ -139,7 +139,7 @@ const LexyCommunity = () => {
 
     return (
         <>
-            <MetaData title="LEXI Community | Flipkart" />
+            <MetaData title="MILAARI Community" />
             <main className="flex flex-col gap-3 px-2 mt-3">
                 <CategoryNavBar />
                 <section className="w-full md:mx-auto md:max-w-6xl">
@@ -183,7 +183,7 @@ const LexyCommunity = () => {
                                     </div>
 
                                     <div>
-                                        <label className="text-sm font-medium text-gray-700">LEXI Rating</label>
+                                        <label className="text-sm font-medium text-gray-700">MILAARI Rating</label>
                                         <div className="mt-1">
                                             <Rating
                                                 name="lexi-rating"
@@ -240,7 +240,7 @@ const LexyCommunity = () => {
                                         value={review}
                                         onChange={(e) => setReview(e.target.value)}
                                         className="mt-1 w-full border border-gray-300 rounded-sm px-3 py-2 text-sm outline-none focus:border-gray-400 min-h-[96px]"
-                                        placeholder="Write your experience with LEXI..."
+                                        placeholder="Write your experience with MILAARI..."
                                     />
                                 </div>
 

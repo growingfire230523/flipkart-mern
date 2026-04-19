@@ -31,7 +31,7 @@ const achievements = [
     {
         id: 'ai-innovation',
         label: 'AI Innovation',
-        title: 'Lexi AI Retail Experiences',
+        title: 'Milaari AI Retail Experiences',
         description:
             'Pioneering in-store AI assistants and recommendation engines tailored for beauty retail.',
         imageUrl:
@@ -69,7 +69,7 @@ const AchievementsCarousel = () => {
                     Our Achievements &amp; Certifications
                 </h2>
                 <p className="mt-2 text-sm text-primary-grey max-w-[720px] mx-auto">
-                    A quick glimpse into the trust, innovation, and customer love that power the Lexi experience.
+                    A quick glimpse into the trust, innovation, and customer love that power the Milaari experience.
                 </p>
             </div>
 

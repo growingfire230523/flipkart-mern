@@ -1,13 +1,11 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import GroupsIcon from '@mui/icons-material/Groups';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import MicIcon from '@mui/icons-material/Mic';
 import Searchbar from './Searchbar';
-import logo from '../../../assets/images/LEXI.png';
+import logo from '../../../assets/images/Milaari.png';
 import whatsappIcon from '../../../assets/images/WA.png';
 import PrimaryDropDownMenu from './PrimaryDropDownMenu';
 import DeliveryLocationPopup from './DeliveryLocationPopup';
@@ -96,16 +94,16 @@ const Header = () => {
   <header id="site-header" className="bg-[#875c43] fixed top-0 py-2.5 w-full z-10 border-b border-gray-600">
 
       {/* <!-- navbar container --> */}
-      <div className="w-full sm:w-9/12 px-1 sm:px-4 m-auto flex justify-between items-center relative">
+      <div className="w-full sm:w-9/12 px-2 sm:px-4 m-auto flex justify-between items-center relative gap-2 sm:gap-0">
 
         {/* <!-- logo & search container --> */}
-        <div className="flex items-center flex-1">
-          <Link className="h-9 sm:h-10 mr-1 sm:mr-4 flex items-center" to="/">
+        <div className="flex items-center flex-1 min-w-0 gap-2 sm:gap-5">
+          <Link className="h-6 sm:h-8 shrink-0 flex items-center" to="/">
             <img
               draggable="false"
-              className="h-full w-auto max-w-[220px] sm:max-w-[260px] object-contain"
+              className="h-full w-auto max-w-[100px] sm:max-w-[190px] object-contain"
               src={logo}
-              alt="LEXI Logo"
+              alt="MILAARI Logo"
             />
           </Link>
 
@@ -114,7 +112,7 @@ const Header = () => {
         {/* <!-- logo & search container --> */}
 
         {/* <!-- right navs --> */}
-        <div className="flex items-center justify-between ml-1 sm:ml-0 gap-0.5 sm:gap-7 relative">
+        <div className="flex items-center shrink-0 ml-2 sm:ml-5 gap-1.5 sm:gap-5 relative">
 
           {/* Mobile: hamburger menu trigger */}
           <button
@@ -172,8 +170,8 @@ const Header = () => {
 
             <Link
               to="/lexi-recommendations"
-              aria-label="LEXI Recommendations"
-              title="LEXI Recommendations"
+              aria-label="MILAARI Recommendations"
+              title="MILAARI Recommendations"
               className={iconLinkClassName(location.pathname === '/lexi-recommendations')}
             >
               <StarLogo className="w-5 h-5" aria-hidden="true" focusable="false" />
@@ -190,36 +188,16 @@ const Header = () => {
               }
             </Link>
 
-            <Link
-              to="/lexi-community"
-              aria-label="LEXI Community for Happy Customers"
-              title="LEXI Community for Happy Customers"
-              className="flex items-center text-white"
-            >
-              <span><GroupsIcon /></span>
-            </Link>
-
             <a
               href={process.env.REACT_APP_LEXI_WHATSAPP_URL || 'https://wa.me'}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Chat with LEXI on WhatsApp"
-              title="Chat with LEXI on WhatsApp"
+              aria-label="Chat with MILAARI on WhatsApp"
+              title="Chat with MILAARI on WhatsApp"
               className="flex items-center"
             >
               <img src={whatsappIcon} alt="WhatsApp" className="w-5 h-5" />
             </a>
-
-            {/* Desktop voice mic — opens Lexy chat with voice */}
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent('lexy:voice:start'))}
-              aria-label="Talk to Lexy"
-              title="Talk to Lexy"
-              className="flex items-center text-white hover:text-white/80 transition-colors"
-            >
-              <MicIcon style={{ fontSize: 22 }} />
-            </button>
           </div>
 
           {isAuthenticated && (
@@ -271,7 +249,7 @@ const Header = () => {
             }
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-              <span className="font-brandSerif text-lg">LEXI Menu</span>
+              <span className="font-brandSerif text-lg">MILAARI Menu</span>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
@@ -356,14 +334,7 @@ const Header = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block py-2 border-b border-white/10"
               >
-                LEXI Recommendations
-              </Link>
-              <Link
-                to="/lexi-community"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 border-b border-white/10"
-              >
-                LEXI Community
+                MILAARI Recommendations
               </Link>
 
               <div className="pt-3 text-xs uppercase tracking-wide opacity-80">Shopping</div>

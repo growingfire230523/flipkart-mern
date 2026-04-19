@@ -29,7 +29,7 @@ const Footer = () => {
         title: 'ABOUT',
         links: [
           { name: 'Store Locator', to: '/' },
-          { name: 'About LEXI', to: '/' },
+          { name: 'About MILAARI', to: '/' },
           { name: 'Careers', to: '/' },
           { name: 'Privacy Policy', to: '/' },
           { name: 'Cookies Policy', to: '/' },
@@ -43,11 +43,11 @@ const Footer = () => {
           { name: 'Returns', to: '/' },
           { name: 'FAQ', to: '/' },
           { name: 'My Account', to: '/' },
-          { name: "LEXI's Loyalty Club", to: '/' },
+          { name: "MILAARI's Loyalty Club", to: '/' },
         ],
       },
       {
-        title: 'MORE FROM LEXI',
+        title: 'MORE FROM MILAARI',
         links: [
           { name: 'Certified Cruelty-Free', to: '/' },
           { name: 'Refer a Friend', to: '/' },
@@ -55,7 +55,7 @@ const Footer = () => {
           { name: 'Pro Artist Programme', to: '/' },
           { name: 'Affiliate & Ambassador Programme', to: '/' },
           { name: 'Promotions and Savings', to: '/' },
-          { name: "LEXI's Magic Change", to: '/' },
+          { name: "MILAARI's Magic Change", to: '/' },
           { name: 'Accessibility Statement', to: '/' },
         ],
       },
@@ -78,7 +78,7 @@ const Footer = () => {
       {
         icon: <LoyaltyIcon fontSize="inherit" />,
         title: 'Unlock rewards and benefits',
-        body: "With LEXI's Loyalty Club.",
+        body: "With MILAARI's Loyalty Club.",
       },
       {
         icon: <AccountCircleIcon fontSize="inherit" />,
@@ -93,7 +93,7 @@ const Footer = () => {
       {
         icon: <EventAvailableIcon fontSize="inherit" />,
         title: 'Book a 1:1 Beauty Consultation',
-        body: "With LEXI's pro artists.",
+        body: "With MILAARI's pro artists.",
       },
     ],
     []
@@ -221,7 +221,7 @@ const Footer = () => {
                     )}
 
                     <p className="mt-4 text-[12px] leading-5 text-primary-darkBlue/70 font-light">
-                      *T&amp;Cs apply. By submitting your email address, you agree to receive marketing information about LEXI.
+                      *T&amp;Cs apply. By submitting your email address, you agree to receive marketing information about MILAARI.
                       You can unsubscribe at any time.
                     </p>
                   </div>

@@ -41,7 +41,7 @@ const Home = () => {
 
   return (
     <>
-      <MetaData title="Online Shopping Site for Mobiles, Electronics, Furniture, Grocery, Lifestyle, Books & More. Best Offers!" />
+      <MetaData title="We're Milaari!" />
       <main className="flex flex-col gap-3 px-2 mt-3">
         <CategoryNavBar />
         <Banner />

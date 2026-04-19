@@ -78,7 +78,7 @@ const Payment = () => {
                 key: data.key,
                 amount: data.order.amount,
                 currency: data.order.currency,
-                name: 'Lexi',
+                name: 'Milaari',
                 description: 'Order Payment',
                 order_id: data.order.id,
                 handler: async (response) => {
@@ -195,7 +195,7 @@ const Payment = () => {
 
     return (
         <>
-            <MetaData title="Lexi: Secure Payment" />
+            <MetaData title="Milaari: Secure Payment" />
 
             <main className="w-full mt-4">
                 <div className="flex flex-col sm:flex-row gap-3.5 w-full sm:w-11/12 mt-0 sm:mt-4 m-auto sm:mb-7">

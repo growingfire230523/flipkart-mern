@@ -16,7 +16,7 @@ import useHeyLexy from '../../hooks/useHeyLexy';
 
 const initialMessage = {
     role: 'assistant',
-    content: "Hi! I'm Lexy AI. Tell me what you want to buy (category, brand, budget).",
+    content: "Hi! I'm Milaari AI. Tell me what you want to buy (category, brand, budget).",
     products: [],
 };
 
@@ -571,9 +571,9 @@ const FloatingChat = () => {
             >
                     <div className="px-4 py-3 bg-[var(--lexy-maroon-75)] text-white flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <span className="font-medium">Lexy AI Assistant</span>
+                            <span className="font-medium">Milaari AI Assistant</span>
                             {heyLexy.wakeListening && (
-                                <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">"Hey Lexy" on</span>
+                                <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">"Hey Milaari" on</span>
                             )}
                         </div>
                         <div className="flex items-center gap-2">
@@ -594,9 +594,9 @@ const FloatingChat = () => {
                                     heyLexy.wakeEnabled ? 'bg-white/30 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'
                                 }`}
                                 type="button"
-                                title={heyLexy.wakeEnabled ? 'Disable "Hey Lexy"' : 'Enable "Hey Lexy"'}
+                                title={heyLexy.wakeEnabled ? 'Disable "Hey Milaari"' : 'Enable "Hey Milaari"'}
                             >
-                                Hey Lexy
+                                Hey Milaari
                             </button>
                             <button
                                 onClick={() => setOpen(false)}
@@ -613,7 +613,7 @@ const FloatingChat = () => {
                         <div className="pointer-events-none absolute inset-0 opacity-10">
                             <img
                                 src={lexiChatBg}
-                                alt="Lexy chat background"
+                                alt="Milaari chat background"
                                 className="w-full h-full object-cover"
                                 draggable="false"
                             />
@@ -681,7 +681,7 @@ const FloatingChat = () => {
                     {tts.speaking && (
                         <div className="px-3 py-1.5 bg-blue-50 border-t border-blue-200 flex items-center gap-2">
                             <VolumeUpIcon sx={{ fontSize: 16 }} className="text-blue-500 animate-pulse" />
-                            <span className="text-xs text-blue-600">Lexy is speaking\u2026</span>
+                            <span className="text-xs text-blue-600">Milaari is speaking…</span>
                             <button
                                 onClick={tts.cancelSpeech}
                                 className="text-xs text-blue-500 hover:text-blue-700 font-medium ml-auto"
@@ -708,7 +708,7 @@ const FloatingChat = () => {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={onKeyDown}
-                                placeholder={voice.listening ? 'Listening...' : 'Ask Lexy anything or tap the mic...'}
+                                placeholder={voice.listening ? 'Listening...' : 'Ask Milaari anything or tap the mic...'}
                                 className="flex-1 resize-none border border-gray-300 rounded px-3 py-2 text-sm leading-5 break-words overflow-x-hidden lexy-hide-scrollbar focus:outline-none focus:ring-2 focus:ring-primary-blue"
                                 rows={1}
                             />
@@ -722,7 +722,7 @@ const FloatingChat = () => {
                             </button>
                         </div>
                         <div className="mt-1 text-[11px] text-gray-500">
-                            Tip: tap the mic or say "Hey Lexy" to use voice, or type your question.
+                            Tip: tap the mic or say "Hey Milaari" to use voice, or type your question.
                         </div>
                     </div>
             </div>

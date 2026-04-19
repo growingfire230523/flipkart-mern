@@ -65,7 +65,7 @@ const LexyApp = ({ embedded = false }) => {
       {!embedded ? (
         <>
           <Typography variant="h5" component="div" textAlign="center" sx={{ mt: 0 }}>
-            Lexy Recommendations
+            Milaari Recommendations
           </Typography>
           <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 0.5 }}>
             Fill your skin details to get personalized skincare & makeup picks.

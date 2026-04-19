@@ -8,39 +8,39 @@ import service4 from '../../../assets/images/LEXI_AI_MakeMyKit_service.png';
 const services = [
     {
         key: 'assistant',
-        title: 'LEXI: AI Shopping Assistant',
+        title: 'MILAARI: AI Shopping Assistant',
         blurb: 'Ask for product help in natural language—budget, skin concerns, gifting ideas, and more.',
         cta: 'TRY IT NOW!',
         to: '/?open=lexi-assistant',
         imageSrc: service1,
-        imageAlt: 'Lexi AI Assistant',
+        imageAlt: 'Milaari AI Assistant',
     },
     {
         key: 'recommender',
-        title: 'LEXI Personalized Picks',
+        title: 'MILAARI Personalized Picks',
         blurb: 'Get tailored recommendations based on your preferences—like a personal beauty concierge.',
         cta: 'TRY IT NOW!',
         to: '/lexi-recommendations',
         imageSrc: service2,
-        imageAlt: 'Lexi Product Recommender',
+        imageAlt: 'Milaari Product Recommender',
     },
     {
         key: 'fragrance',
-        title: 'LEXI Find My Fragrance',
+        title: 'MILAARI Find My Fragrance',
         blurb: 'Answer a few quick questions and discover a fragrance profile that matches your vibe.',
         cta: 'TRY IT NOW!',
         to: '/fragrance-finder',
         imageSrc: service3,
-        imageAlt: 'Lexi Find My Fragrance',
+        imageAlt: 'Milaari Find My Fragrance',
     },
     {
         key: 'kit',
-        title: 'LEXI Make My Kit',
+        title: 'MILAARI Make My Kit',
         blurb: 'Instantly build a curated kit of top-rated essentials and add them to your cart in one go.',
         cta: 'TRY IT NOW!',
         to: '/?open=make-my-kit',
         imageSrc: service4,
-        imageAlt: 'Lexi Make My Kit',
+        imageAlt: 'Milaari Make My Kit',
     },
 ];
 
@@ -52,7 +52,7 @@ const AiPoweredServices = () => {
                     OUR AI-POWERED SERVICES
                 </h2>
                 <p className="mt-2 text-center text-sm text-primary-grey max-w-[720px] mx-auto">
-                    Explore Lexi—our in-store AI experiences designed to help you shop faster, smarter, and more confidently.
+                    Explore Milaari—our in-store AI experiences designed to help you shop faster, smarter, and more confidently.
                 </p>
             </div>
 

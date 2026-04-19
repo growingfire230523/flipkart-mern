@@ -21,7 +21,7 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [googleReady, setGoogleReady] = useState(false);
-    const [useOtp, setUseOtp] = useState(false);
+    const [useOtp, setUseOtp] = useState(true);
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
     const [otpSent, setOtpSent] = useState(false);

@@ -93,7 +93,7 @@ const OrderDetails = () => {
 
     return (
         <>
-            <MetaData title="Order Details | Lexi" />
+            <MetaData title="Order Details | Milaari" />
             <CategoryNavBar />
 
             <main className="w-full mt-2">

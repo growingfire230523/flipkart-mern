@@ -485,3 +485,38 @@ export const loginWithPhoneOtp = (phone, otp) => async (dispatch) => {
         });
     }
 };
+
+// Register with phone OTP (WhatsApp-primary)
+// Step 1 – send OTP; returns { registrationToken } to hold in component state
+export const sendPhoneRegisterOtp = ({ name, phone, email }) => async () => {
+    const config = { headers: { 'Content-Type': 'application/json' } };
+    const { data } = await axios.post('/api/v1/phone/register/otp', { name, phone, email }, config);
+    return data; // { success, registrationToken, message }
+};
+
+// Step 2 – verify OTP + create account
+export const verifyPhoneRegisterOtp = (registrationToken, otp) => async (dispatch) => {
+    try {
+        dispatch({ type: REGISTER_USER_REQUEST });
+
+        const config = { headers: { 'Content-Type': 'application/json' } };
+        const { data } = await axios.post('/api/v1/phone/register/verify', { registrationToken, otp }, config);
+
+        const userId = data?.user?._id;
+        setActiveUserId(userId);
+        migrateLegacyCartStorage(userId);
+        migrateLegacyWishlistStorage(userId);
+        migrateLegacySaveForLaterStorage(userId);
+        mergeGuestCompareIntoUserIfEmpty(userId);
+
+        dispatch({ type: REGISTER_USER_SUCCESS, payload: data.user });
+
+        dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
+        dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
+    } catch (error) {
+        dispatch({ type: REGISTER_USER_FAIL, payload: error.response?.data?.message || error.message });
+    }
+};
