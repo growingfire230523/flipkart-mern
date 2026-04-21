@@ -1,0 +1,242 @@
+export const categories = [
+  "FRAGRANCES",
+  "MAKEUP",
+  "HAIR CARE",
+  "PROFESSIONAL",
+  "SKIN CARE",
+  "BATH & BODY",
+  "MENS GROOMING",
+  "INNERWEAR",
+  "GIFTS",
+  "MOM & BABY",
+];
+
+export const subCategoriesByCategory: Record<string, string[]> = {
+  FRAGRANCES: ['Premium Perfumes', 'Mens Perfumes', 'Womens Perfumes', 'Deodorant & Roll Ons'],
+  MAKEUP: [
+    'Face Primer', 'Concealer', 'Foundation', 'Compact', 'Loose Powder', 'Blush',
+    'Bronzer', 'BB & CC Cream', 'Highlighters', 'Setting Spray', 'Makeup Remover',
+    'Face and Body Glitter', 'Highlighter', 'Illuminator', 'Kajal', 'Eyeliner',
+    'Mascara', 'Eye Shadow', 'Eye Brow Enhancers', 'Eye Primer', 'False Eyelashes',
+    'Eye Makeup Remover', 'Eye Palettes', 'Face Palettes', 'Lipstick', 'Lip Gloss',
+    'Lip Liner', 'Lip Balm', 'Lip Primer', 'lipstick kit', 'Nail Polish',
+    'Nail Polish Remover', 'Manicure and Pedicure Kits', 'Nail Tool', 'Brushes',
+    'Sponges & Applicators', 'Eyelash Curlers', 'Tweezers', 'Sharpeners', 'Mirrors',
+  ],
+  'HAIR CARE': [
+    'SHAMPOO', 'CONDITIONER', 'HAIR MASKS', 'HAIR COLOR', 'HAIR COLOR DEVELOPERS',
+    'HAIR OIL', 'HAIR TREATMENTS', 'HAIR STYLING', 'Hair Gel', 'Hair Spray',
+    'HAIR SERUM', 'TOOLS & ACCESSORIES', 'Hair Brush', 'Hair comb',
+  ],
+  PROFESSIONAL: [
+    "L'OREAL PROFESSIONAL", 'SCHWARZKOPF PROFESSIONAL', 'KRYOLAN MAKEUP',
+    'KERASTASE', 'WELLA', 'MATRIX', 'OLAPLEX',
+  ],
+  'SKIN CARE': [
+    'Face Mask', 'Lotions & Creams', 'Face Wash & Cleanser', 'Serums & Oils',
+    'Scrubs & Exfoliators', 'Hand & Nail Cream', 'Foot Cream',
+    'Skin Toner & Makeup Remover', 'Eye Care', 'Sunscreen',
+  ],
+  'BATH & BODY': [
+    'Mens Perfumes', 'Womens Perfumes', 'Body Sprays & Mists', 'Deodorants & Roll Ons',
+    'Shower Gel', 'Lotions & Creams', 'Body Scrubs & Polish', 'Body Oils', 'Soaps',
+    'Hand Wash & Sanitizers', 'Room Freshners', 'Oral Care', 'Face Wipes',
+    'Loofahs & Scrubbers', 'Talcum powder', 'Toiletries & Tissues',
+    'Tools & Accessories', 'Bleach & Hair Removal', 'Hair Removal Wax',
+  ],
+  'MENS GROOMING': [
+    'After Shaves', 'Beard Color', 'Shaving Cream, Gel & Foam',
+    'Shaving Razors & Blades', 'Hair Styling', 'Deodorants & Mists',
+    'Deo Sticks & Roll Ons', 'Beard Oil',
+  ],
+  INNERWEAR: [
+    'Girls Vest', 'Boys Underwear', 'Boys Vest', 'Boxers', 'Lowers',
+    'T-Shirts', 'Underwear', 'Vest', 'Bras', 'Panties', 'Women T-Shirts',
+  ],
+  GIFTS: ['For Him', 'For Her'],
+  'MOM & BABY': ['Johnson & Johnsons', 'Chicco', 'Mothercare', 'Cetaphil', "Palmer's", 'Sebamed'],
+};
+
+export const offerProducts = [
+  {
+    image: "https://www.giorgioarmanibeauty-usa.com/dw/image/v2/AANG_PRD/on/demandware.static/-/Sites-gab-master-catalog/default/dw467341ed/products/makeup/ww-01019-arm_NEW/1/3614274164664.jpg",
+    name: "Foundations",
+    offer: "From ₹999",
+    tag: "ARMANI",
+  },
+  {
+    image: "https://images.ctfassets.net/wlke2cbybljx/3J9BCViWBnbZLLxMfU7x09/58baec9e3b3d959d3dd2048cfe611541/043_240003_EXAGGEREYES_MASCARA_P_FULL_SIZE_OPEN_WITH_BRUSH_KK_2405.png",
+    name: "Mascaras",
+    offer: "From ₹499",
+    tag: "Buy Now!",
+  },
+  {
+    image: "https://images.ctfassets.net/wlke2cbybljx/5kTuxHlUREYVCyUadhKFcp/d4b80a8e779bb56cb1717c85b155bae4/MORE-SEX-100ML-CLOSED-PACKSHOT.png",
+    name: "Perfumes",
+    offer: "Min 30% Off",
+    tag: "Top Brands",
+  },
+  {
+    image: "https://images.ctfassets.net/wlke2cbybljx/10WWrtmviweMiGoBN0PHra/04b79ee86e45c5c5c8dcecd118599207/MAGIC-SERUM-100ML-PACKSHOT.png",
+    name: "Face Serums",
+    offer: "Min 40% Off",
+    tag: "Grab Now!",
+  },
+  {
+    image: "https://www.giorgioarmanibeauty-usa.com/dw/image/v2/AANG_PRD/on/demandware.static/-/Sites-gab-master-catalog/default/dwf3856ee1/products/makeup/ww-00965-arm/F2/3614274492903.jpg",
+    name: "Skin Cremes",
+    offer: "From ₹299",
+    tag: "Explore Now!",
+  },
+  {
+    image: "https://images.ctfassets.net/wlke2cbybljx/23p4TKjqpeC3zePOLb2HpY/ae91f8c6bbcc0f83e23ed28bced282dd/DROP-SHADOW-TEMPLATE_copy.png",
+    name: "Setting Sprays",
+    offer: "Min 20% Off",
+    tag: "New Collection!",
+  },
+  {
+    image: "https://images.ctfassets.net/wlke2cbybljx/6QLItVWaR3INrE5B8MMObK/26b202e539ef21b432b9336e6300c986/039_220108_PILLOW_TALK_PLUMP_P_MATTE_REV_ORIGINAL_OPEN_RJ_2402.png",
+    name: "Lips Sticks",
+    offer: "Upto 40% Off",
+    tag: "Buy Now!",
+  },
+  {
+    image: "https://images.ctfassets.net/wlke2cbybljx/AsVqDlt8VJEgNYQgGKFcx/2d9d309ef480f681b94889d760c87686/luxury-palette-pillow-talk-packshot.png",
+    name: "Luxury Palettes",
+    offer: "Upto 15% Off",
+    tag: "Great Savings!",
+  },
+  {
+    image: "https://www.lakmeindia.com/cdn/shop/files/19615_S1-8901030989254_1000x.jpg",
+    name: "Polish Removers",
+    offer: "Min 60% Off",
+    tag: "Top Brands!",
+  },
+  {
+    image: "https://www.lakmeindia.com/cdn/shop/files/23046_H-8909106015746_1000x.jpg",
+    name: "Moisturizers",
+    offer: "Starting ₹399",
+    tag: "Combos Available!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/t-shirt/n/x/y/s-9889786-english-premium-original-imaheywexwhs5wgh.jpeg",
+    name: "Women Garments",
+    offer: "Min 20% Off",
+    tag: "Shop Now!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/short/7/3/j/m-fkcrsprt-2zip-cross-spirit-original-imahdvemjcshyyv2.jpeg",
+    name: "Men Garments",
+    offer: "Upto 20% Off",
+    tag: "Grab Now!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/massage-oil/0/z/b/-original-imah4zer6vhjqhgx.jpeg",
+    name: "Baby Essentials",
+    offer: "Min 10% Off",
+    tag: "Vast Collection!",
+  },
+  {
+    image: "https://images.ctfassets.net/wlke2cbybljx/5kf7DRRhLDLTC4vjhSc8A/532dd4bcf1bafbdcd00994ad2ae7f46e/PILLOW_TALK_ICONS_ON_THE_GO-BUNDLE.png",
+    name: "Gift Sets",
+    offer: "From ₹199",
+    tag: "Great Savings!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/shampoo/e/h/d/-original-imahg3g2va8gkcz7.jpeg",
+    name: "Shampoos",
+    offer: "Upto 60% Off",
+    tag: "Combos Available!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/hair-oil/6/4/b/30-beard-and-hair-growth-oil-for-beardo-original-imahbb83ywrpfzt8.jpeg",
+    name: "Beard Essentials",
+    offer: "From Just ₹299",
+    tag: "BEARDO Collection!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/shoe/n/w/n/-original-imah3k6r8yndrdnn.jpeg",
+    name: "Shoes",
+    offer: "Start from ₹299",
+    tag: "All Variants",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/air-freshener/1/j/3/300-air-freshener-room-spray-150-ml-x-2-combolavender-mist-original-imaheqht5ufn7fwr.jpeg",
+    name: "Home Essentials",
+    offer: "Min 60% Off",
+    tag: "Combos Available!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/watch/y/6/o/1-3335nl01-fastrack-men-original-imahkzy9ggywnjku.jpeg",
+    name: "Watches",
+    offer: "Upto 35% Off",
+    tag: "Top Brands!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/bangle-bracelet-armlet/m/t/d/2-8-2-47-na-2-rose-gold-bangle-art-cottage-original-imagpfjhz7xbgwgh.jpeg",
+    name: "Bangles & Bracelets",
+    offer: "From ₹299",
+    tag: "Classic Deals",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/hair-straightener/1/y/3/3-in-1-hot-air-brush-for-women-one-step-dryer-volumizer-and-original-imahg6xrn4bb89fh.jpeg",
+    name: "Hair Straighteners",
+    offer: "From ₹999",
+    tag: "Grab Now!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/sunglass/m/x/j/m-149044-vincent-chase-original-imahjgnbezsrgaf9.jpeg",
+    name: "Goggles & Sunglasses",
+    offer: "Upto 20% Off",
+    tag: "Shop Now!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/soap/f/f/g/3-300-perfumed-bathing-soap-bar-for-men-3x100gm-helps-in-original-imahghphbstnx2jh.jpeg",
+    name: "Soaps",
+    offer: "Upto 20% Off",
+    tag: "Great Savings!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/trimmer/i/o/c/0-5-10-mm-rechargeable-3-in-1-bikini-trimmer-and-full-body-original-imahjw9pgugrahpf.jpeg",
+    name: "Grooming Kits",
+    offer: "Just ₹499 onwards",
+    tag: "Unisex Collection!",
+  },
+  {
+    image: "https://rukminim2.flixcart.com/image/1422/1422/xif0q/face-wash/n/f/g/100-vitamin-c-e-super-bright-gel-for-glowing-and-brightening-original-imahanwfph5326gh.jpeg",
+    name: "Face Washes",
+    offer: "Min 10% Off",
+    tag: "Grab Now!",
+  },
+];
+
+export const achievements = [
+  {
+    id: 'customer-love',
+    label: 'Customer Love',
+    title: '4.8/5 Average Rating',
+    description: 'Consistently rated highly by beauty shoppers for our curated assortment and guidance.',
+    imageUrl: 'https://dummyimage.com/600x300/4b2a1a/ffffff&text=Customer+Love',
+  },
+  {
+    id: 'clean-beauty',
+    label: 'Clean Beauty Focus',
+    title: 'Curated Clean & Conscious Brands',
+    description: 'A growing portfolio of thoughtfully selected, ingredient-conscious products across makeup, fragrance, and skincare.',
+    imageUrl: 'https://dummyimage.com/600x300/5b3a2a/ffffff&text=Clean+Beauty',
+  },
+  {
+    id: 'secure-payments',
+    label: 'Secure Payments',
+    title: 'Bank-Grade Payment Security',
+    description: 'End-to-end encrypted payment flows with best-practice security and continuous monitoring.',
+    imageUrl: 'https://dummyimage.com/600x300/6b4632/ffffff&text=Secure+Payments',
+  },
+  {
+    id: 'ai-innovation',
+    label: 'AI Innovation',
+    title: 'Lexi AI Retail Experiences',
+    description: 'Pioneering in-store AI assistants and recommendation engines tailored for beauty retail.',
+    imageUrl: 'https://dummyimage.com/600x300/7b5240/ffffff&text=AI+Innovation',
+  },
+];

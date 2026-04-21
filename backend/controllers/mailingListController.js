@@ -61,6 +61,9 @@ exports.subscribeToMailingList = asyncErrorHandler(async (req, res, next) => {
         if (!normalized) {
             return next(new ErrorHandler('Please provide a valid phone number for WhatsApp.', 400));
         }
+        if (!String(normalized).startsWith('+91')) {
+            return next(new ErrorHandler('Please provide an Indian WhatsApp number in +91 format.', 400));
+        }
         phone = normalized;
     }
 

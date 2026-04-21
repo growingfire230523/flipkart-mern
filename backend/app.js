@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
@@ -10,6 +11,22 @@ const app = express();
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config({ path: 'backend/config/config.env' });
 }
+
+const allowedOrigins = [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'http://localhost:8081',  // Expo web dev server
+    'http://localhost:19006', // Expo web alternate port
+];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (native mobile, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
+    credentials: true,
+}));
 
 app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
