@@ -126,7 +126,7 @@ const LEXI_ITEMS = [
   },
   {
     id: 'chat',
-    label: 'Lexy AI\nChatbot',
+    label: 'Milaari AI\nChatbot',
     Icon: ChatIcon,
     colors: ['#0891b2', '#67e8f9'] as [string, string],
     route: '/lexi-chat',
@@ -139,14 +139,14 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const cartCount = useSelector((s: RootState) =>
     s.cart.cartItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0)
   );
-  const [lexiOpen, setLexiOpen] = useState(false);
+  const [lexiOpen, setMilaariOpen] = useState(false);
 
   // Animation values
   const overlayAnim = useRef(new Animated.Value(0)).current;
   const itemAnims = useRef(LEXI_ITEMS.map(() => new Animated.Value(0))).current;
 
-  const openLexi = useCallback(() => {
-    setLexiOpen(true);
+  const openMilaari = useCallback(() => {
+    setMilaariOpen(true);
     Animated.parallel([
       Animated.timing(overlayAnim, {
         toValue: 1,
@@ -166,7 +166,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     ]).start();
   }, [overlayAnim, itemAnims]);
 
-  const closeLexi = useCallback(() => {
+  const closeMilaari = useCallback(() => {
     Animated.parallel([
       Animated.timing(overlayAnim, {
         toValue: 0,
@@ -180,10 +180,10 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           useNativeDriver: true,
         })
       ),
-    ]).start(() => setLexiOpen(false));
+    ]).start(() => setMilaariOpen(false));
   }, [overlayAnim, itemAnims]);
 
-  const isLexiFocused = useMemo(() => {
+  const isMilaariFocused = useMemo(() => {
     const active = state.routes?.[state.index];
     return String(active?.name || '') === 'lexi';
   }, [state.index, state.routes]);
@@ -201,7 +201,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const labelsByName: Record<string, string> = {
     index: 'Home',
     shop: 'Shop',
-    lexi: 'Lexi',
+    lexi: 'Milaari',
     cart: 'Cart',
     account: 'Account',
     wishlist: 'Wishlist',
@@ -225,7 +225,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           {/* Full-screen blur – covers the content BEHIND the tab bar only */}
           <BlurView intensity={65} tint="dark" style={StyleSheet.absoluteFillObject} />
           {/* Tap outside to close */}
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={closeLexi} />
+          <Pressable style={StyleSheet.absoluteFillObject} onPress={closeMilaari} />
 
           {/* Rainbow arc items – bottom values measured from screen bottom */}
           {(() => {
@@ -254,7 +254,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                   <Pressable
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      closeLexi();
+                      closeMilaari();
                       setTimeout(() => router.push(item.route as any), 200);
                     }}
                     style={{ alignItems: 'center' }}
@@ -294,14 +294,14 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             const onPress = () => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-              // Toggle Lexi AI radial menu instead of navigating.
+              // Toggle Milaari AI radial menu instead of navigating.
               if (routeName === 'lexi') {
-                if (lexiOpen) closeLexi(); else openLexi();
+                if (lexiOpen) closeMilaari(); else openMilaari();
                 return;
               }
 
-              // Close Lexi menu when moving to other tabs.
-              if (lexiOpen) closeLexi();
+              // Close Milaari menu when moving to other tabs.
+              if (lexiOpen) closeMilaari();
 
               const event = navigation.emit({
                 type: 'tabPress',
@@ -326,7 +326,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                   onPress={onPress}
                   onLongPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    closeLexi();
+                    closeMilaari();
                     router.push('/lexi-chat');
                   }}
                   delayLongPress={250}
@@ -340,7 +340,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                   >
                     <Icon color="#ffffff" size={iconSize} />
                   </LinearGradient>
-                  <Text style={[styles.label, { color: (isFocused || lexiOpen || isLexiFocused) ? '#875c43' : '#7b6f6a' }]}>
+                  <Text style={[styles.label, { color: (isFocused || lexiOpen || isMilaariFocused) ? '#875c43' : '#7b6f6a' }]}>
                     {label}
                   </Text>
                 </Pressable>

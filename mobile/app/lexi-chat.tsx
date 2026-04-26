@@ -26,7 +26,7 @@ interface Message {
 
 const initialMessage: Message = {
   id: '0',
-  text: "Hi! I'm Lexy AI. Tell me what you want to buy (category, brand, budget).",
+  text: "Hi! I'm Milaari AI. Tell me what you want to buy (category, brand, budget).",
   sender: 'assistant',
 };
 
@@ -41,7 +41,7 @@ const detectIntent = (text: string): string | null => {
   return keywords.find((k) => lower.includes(k)) || null;
 };
 
-export default function LexiChatScreen() {
+export default function MilaariChatScreen() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { wishlistItems } = useSelector((state: RootState) => state.wishlist);
@@ -245,7 +245,7 @@ export default function LexiChatScreen() {
           <Text className="text-lg text-white">←</Text>
         </Pressable>
         <View className="flex-1">
-          <Text className="text-base font-roboto-bold text-white">Lexy AI</Text>
+          <Text className="text-base font-roboto-bold text-white">Milaari AI</Text>
           <Text className="text-xs text-white/70">Your personal beauty assistant</Text>
         </View>
         {user?.name && (
@@ -269,7 +269,7 @@ export default function LexiChatScreen() {
       {loading && (
         <View className="px-3 mb-2 items-start">
           <View className="bg-white border border-gray-200 rounded-lg rounded-bl-sm px-3 py-2">
-            <Text className="text-sm text-gray-400">Lexy is typing...</Text>
+            <Text className="text-sm text-gray-400">Milaari is typing...</Text>
           </View>
         </View>
       )}
@@ -299,7 +299,7 @@ export default function LexiChatScreen() {
             </Pressable>
           </View>
           <Text className="text-[10px] text-gray-400 mt-1.5 text-center">
-            Lexy can recommend products based on your preferences, budget & skin type
+            Milaari can recommend products based on your preferences, budget & skin type
           </Text>
         </View>
       </KeyboardAvoidingView>

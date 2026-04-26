@@ -63,7 +63,7 @@ export default function AchievementsCarousel() {
     <View style={styles.section}>
       <SectionHeader title="Our Achievements" />
       <Text style={styles.subtitle}>
-        Trust, innovation, and customer love that power the Lexi experience
+        Trust, innovation, and customer love that power the Milaari experience
       </Text>
       <FlatList
         ref={flatListRef}
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#1f2937',
     fontSize: 14,
-    fontFamily: 'Outfit-Bold',
+    fontFamily: 'Roboto-Bold',
   },
   description: {
     marginTop: 4,

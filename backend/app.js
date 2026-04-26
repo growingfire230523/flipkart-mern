@@ -12,11 +12,52 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config({ path: 'backend/config/config.env' });
 }
 
-const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
+const normalizeOrigin = (value) => {
+    if (!value) return null;
+    const trimmed = String(value).trim();
+    if (!trimmed) return null;
+
+    try {
+        return new URL(trimmed).origin;
+    } catch (_) {
+        return trimmed.replace(/\/$/, '');
+    }
+};
+
+const addApexWwwVariant = (originSet, originValue) => {
+    try {
+        const parsed = new URL(originValue);
+        const host = parsed.hostname;
+
+        // Only derive www/apex pairs for real domains, not localhost/IPs.
+        const isDomain = host.includes('.') && host !== 'localhost';
+        if (!isDomain) return;
+
+        const variantHost = host.startsWith('www.') ? host.slice(4) : `www.${host}`;
+        originSet.add(`${parsed.protocol}//${variantHost}${parsed.port ? `:${parsed.port}` : ''}`);
+    } catch (_) {
+        // Ignore values that are not valid URLs.
+    }
+};
+
+const configuredFrontendOrigins = [
+    process.env.FRONTEND_URL,
+    ...(process.env.FRONTEND_URLS || '').split(','),
+]
+    .map(normalizeOrigin)
+    .filter(Boolean);
+
+const allowedOriginsSet = new Set([
+    ...(configuredFrontendOrigins.length ? configuredFrontendOrigins : ['http://localhost:3000']),
     'http://localhost:8081',  // Expo web dev server
     'http://localhost:19006', // Expo web alternate port
-];
+]);
+
+for (const originValue of Array.from(allowedOriginsSet)) {
+    addApexWwwVariant(allowedOriginsSet, originValue);
+}
+
+const allowedOrigins = Array.from(allowedOriginsSet);
 
 app.use(cors({
     origin: (origin, callback) => {

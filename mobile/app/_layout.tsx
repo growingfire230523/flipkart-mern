@@ -31,8 +31,9 @@ function SessionBootstrap() {
 }
 
 function RootLayoutInner() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     'Roboto': Roboto_400Regular,
+    'Roboto-Regular': Roboto_400Regular,
     'Roboto-Medium': Roboto_500Medium,
     'Roboto-Bold': Roboto_700Bold,
     'CormorantGaramond': CormorantGaramond_400Regular,
@@ -41,7 +42,11 @@ function RootLayoutInner() {
     'CormorantGaramond-Bold': CormorantGaramond_700Bold,
   });
 
-  if (!fontsLoaded) {
+  if (fontError) {
+    console.warn('Font loading failed; continuing without custom fonts.', fontError);
+  }
+
+  if (!fontsLoaded && !fontError) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fbf6f2' }}>
         <ActivityIndicator size="large" color="#875c43" />

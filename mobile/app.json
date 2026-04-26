@@ -14,7 +14,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lexi.mobile"
+      "bundleIdentifier": "com.lexi.mobile",
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "LEXI needs speech recognition to search by voice.",
+        "NSMicrophoneUsageDescription": "LEXI needs microphone access for voice search."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +27,12 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.lexi.mobile"
+      "package": "com.lexi.mobile",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -51,7 +60,14 @@
           "microphonePermission": "LEXI needs microphone access for voice search.",
           "speechRecognitionPermission": "LEXI needs speech recognition to search by voice."
         }
-      ]
-    ]
+      ],
+      "expo-asset"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2e00694d-4bc1-4c25-89d6-5835602e677a"
+      }
+    }
   }
 }

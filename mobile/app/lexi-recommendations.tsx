@@ -10,7 +10,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { analyzeFaceApi } from '../src/api/endpoints/lexyAnalyzer';
-import { getLexyRecommendationsApi } from '../src/api/endpoints/lexyRecommendations';
+import { getMilaariRecommendationsApi } from '../src/api/endpoints/lexyRecommendations';
 import { addToCart } from '../src/store/slices/cartSlice';
 import { AppDispatch } from '../src/store';
 import Toast from 'react-native-toast-message';
@@ -177,7 +177,7 @@ function CameraCapture({ tone, onCapture, onUpload }: {
 }
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-export default function LexiRecommendationsScreen() {
+export default function MilaariRecommendationsScreen() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [permission, requestPermission] = useCameraPermissions();
@@ -239,7 +239,7 @@ export default function LexiRecommendationsScreen() {
       const numericFeatures = Object.fromEntries(
         Object.entries(next).map(([k, v]) => [k, v ? 1 : 0])
       );
-      const { data } = await getLexyRecommendationsApi({ features: numericFeatures, type: skinType, tone });
+      const { data } = await getMilaariRecommendationsApi({ features: numericFeatures, type: skinType, tone });
       setRecommendations(data);
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to get recommendations');

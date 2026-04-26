@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "fe26404f-6bf4-4a7c-a6a9-4b0b7bdeb76f"
+      }
+    },
+    "android": {
+      "package": "com.himanshuji.flipkart"
+    }
+  }
+}

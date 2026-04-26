@@ -135,7 +135,7 @@ export default function PaymentScreen() {
         key,
         amount: rzOrder.amount,
         currency: rzOrder.currency || 'INR',
-        name: 'Lexi',
+        name: 'Milaari',
         description: 'Order Payment',
         order_id: rzOrder.id,
         prefill: {

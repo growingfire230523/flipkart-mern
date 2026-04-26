@@ -37,8 +37,18 @@ export default function NewsletterSection() {
       return;
     }
 
-    const normalizedPhone = phone.trim() ? normalizeIndianPhone(phone) : undefined;
-    if (phone.trim() && !normalizedPhone) {
+    const phoneTrimmed = phone.trim();
+    let normalizedPhone: string | undefined;
+    if (phoneTrimmed) {
+      const candidate = normalizeIndianPhone(phoneTrimmed);
+      if (!candidate) {
+        Toast.show({ type: 'error', text1: 'Enter a valid Indian number in +91 format' });
+        return;
+      }
+      normalizedPhone = candidate;
+    }
+
+    if (phoneTrimmed && !normalizedPhone) {
       Toast.show({ type: 'error', text1: 'Enter a valid Indian number in +91 format' });
       return;
     }

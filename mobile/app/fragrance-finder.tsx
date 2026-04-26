@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   },
   introTitle: {
     fontSize: 38,
-    fontFamily: 'PlayfairDisplay-Bold',
+    fontFamily: 'CormorantGaramond-Bold',
     color: '#24171a',
     textAlign: 'center',
     letterSpacing: 3,
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   },
   questionText: {
     fontSize: 26,
-    fontFamily: 'PlayfairDisplay-Bold',
+    fontFamily: 'CormorantGaramond-Bold',
     color: '#24171a',
     textAlign: 'center',
     letterSpacing: 1,
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   },
   resultTitle: {
     fontSize: 30,
-    fontFamily: 'PlayfairDisplay-Bold',
+    fontFamily: 'CormorantGaramond-Bold',
     color: '#24171a',
     textAlign: 'center',
     letterSpacing: 2,
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
   },
   resultName: {
     fontSize: 20,
-    fontFamily: 'PlayfairDisplay-Bold',
+    fontFamily: 'CormorantGaramond-Bold',
     color: '#24171a',
     lineHeight: 28,
   },

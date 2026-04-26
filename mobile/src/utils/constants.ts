@@ -235,7 +235,7 @@ export const achievements = [
   {
     id: 'ai-innovation',
     label: 'AI Innovation',
-    title: 'Lexi AI Retail Experiences',
+    title: 'Milaari AI Retail Experiences',
     description: 'Pioneering in-store AI assistants and recommendation engines tailored for beauty retail.',
     imageUrl: 'https://dummyimage.com/600x300/7b5240/ffffff&text=AI+Innovation',
   },

@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const features = [
   {
-    title: 'Chat with Lexi',
+    title: 'Chat with Milaari',
     description: 'Your personal AI beauty assistant. Ask anything about skincare, makeup, and fragrance.',
     route: '/lexi-chat',
     image: require('../../assets/images/services/LEXI_AI_Chat_service.png'),
@@ -48,14 +48,14 @@ const features = [
   },
 ];
 
-export default function LexiScreen() {
+export default function MilaariScreen() {
   const router = useRouter();
 
   return (
     <SafeAreaView className="flex-1 bg-cream" edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <View className="px-4 pt-4 pb-2">
-          <Text className="text-3xl font-brand-bold text-primary-darkBlue">Lexi AI</Text>
+          <Text className="text-3xl font-brand-bold text-primary-darkBlue">Milaari AI</Text>
           <Text className="text-sm text-primary-grey mt-1">
             Your intelligent beauty companion
           </Text>
