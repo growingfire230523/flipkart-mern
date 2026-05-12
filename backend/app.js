@@ -20,7 +20,14 @@ const normalizeOrigin = (value) => {
     try {
         return new URL(trimmed).origin;
     } catch (_) {
-        return trimmed.replace(/\/$/, '');
+        // Support env values like "milaari.com" or "www.milaari.com".
+        // Default to https for production-style domain entries.
+        const candidate = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+        try {
+            return new URL(candidate).origin;
+        } catch (_) {
+            return trimmed.replace(/\/$/, '');
+        }
     }
 };
 
@@ -58,6 +65,8 @@ for (const originValue of Array.from(allowedOriginsSet)) {
 }
 
 const allowedOrigins = Array.from(allowedOriginsSet);
+
+console.log('[CORS] Allowed origins:', allowedOrigins.join(', '));
 
 app.use(cors({
     origin: (origin, callback) => {
