@@ -15,7 +15,7 @@ const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
 const router = express.Router();
 
 // ── Public webhook (Shiprocket pushes updates here) ────────────────
-router.route('/shiprocket/webhook').post(shiprocketWebhook);
+router.route('/logistics/webhook').post(shiprocketWebhook);
 
 // ── Customer actions ───────────────────────────────────────────────
 router.route('/order/:id/cancel').put(isAuthenticatedUser, cancelOrder);

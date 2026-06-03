@@ -121,7 +121,7 @@ exports.shiprocketWebhook = asyncErrorHandler(async (req, res) => {
     // Validate webhook token if configured
     const webhookToken = String(process.env.SHIPROCKET_WEBHOOK_TOKEN || '').trim();
     if (webhookToken) {
-        const incomingToken = req.headers['x-shiprocket-token'] || req.query.token || '';
+        const incomingToken = req.headers['x-api-key'] || req.headers['x-shiprocket-token'] || req.query.token || '';
         if (incomingToken !== webhookToken) {
             return res.status(401).json({ success: false, message: 'Invalid webhook token' });
         }

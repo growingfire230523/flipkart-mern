@@ -173,34 +173,59 @@ const MainData = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-6 text-sm">
                 <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-primary-blue gap-2 rounded-xl shadow-sm p-5">
                     <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Total Sales Amount</h4>
-                    <h2 className="text-2xl font-semibold text-primary-darkBlue">₹{Number(summary?.totalSalesAmount || 0).toLocaleString()}</h2>
+                    <h2 className="font-sans text-2xl font-semibold text-primary-darkBlue">₹{Number(summary?.totalSalesAmount || 0).toLocaleString()}</h2>
                 </div>
                 <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-primary-orange gap-2 rounded-xl shadow-sm p-5">
                     <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Total Orders</h4>
-                    <h2 className="text-2xl font-semibold text-primary-darkBlue">{Number(summary?.totalOrders || 0).toLocaleString()}</h2>
+                    <h2 className="font-sans text-2xl font-semibold text-primary-darkBlue">{Number(summary?.totalOrders || 0).toLocaleString()}</h2>
                 </div>
                 <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-primary-yellow gap-2 rounded-xl shadow-sm p-5">
                     <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Total Products</h4>
-                    <h2 className="text-2xl font-semibold text-primary-darkBlue">{Number(summary?.totalProducts || 0).toLocaleString()}</h2>
+                    <h2 className="font-sans text-2xl font-semibold text-primary-darkBlue">{Number(summary?.totalProducts || 0).toLocaleString()}</h2>
                 </div>
                 <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-primary-green gap-2 rounded-xl shadow-sm p-5">
                     <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Total Users</h4>
-                    <h2 className="text-2xl font-semibold text-primary-darkBlue">{Number(summary?.totalUsers || 0).toLocaleString()}</h2>
+                    <h2 className="font-sans text-2xl font-semibold text-primary-darkBlue">{Number(summary?.totalUsers || 0).toLocaleString()}</h2>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-6 text-sm">
+                {/* AOV */}
+                <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-[#b76e79] gap-2 rounded-xl shadow-sm p-5">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Avg. Order Value (AOV)</h4>
+                    <h2 className="font-sans text-2xl font-semibold text-primary-darkBlue">
+                        ₹{Number(summary?.aov || 0).toLocaleString()}
+                    </h2>
+                    <p className="text-[10px] text-primary-grey">Revenue ÷ Orders</p>
+                </div>
+                {/* Conversion Rate */}
+                <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-[#d6b36a] gap-2 rounded-xl shadow-sm p-5">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Conversion Rate</h4>
+                    <h2 className="font-sans text-2xl font-semibold text-primary-darkBlue">
+                        {Number(summary?.conversionRate || 0).toFixed(1)}%
+                    </h2>
+                    <p className="text-[10px] text-primary-grey">Registered users who placed ≥ 1 order</p>
+                </div>
+                {/* RTO — Shiprocket placeholder */}
+                <div className="flex flex-col bg-white border border-gray-200 border-t-4 border-t-gray-300 gap-2 rounded-xl shadow-sm p-5 opacity-60">
+                    <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">RTO Rate (Shiprocket)</h4>
+                    <h2 className="font-sans text-2xl font-semibold text-gray-400">— %</h2>
+                    <p className="text-[10px] text-primary-grey">Coming soon · Shiprocket integration</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-6 text-sm">
                 <div className="flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm p-5">
                     <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Flash Deal Ends In</h4>
-                    <p className="mt-2 text-base sm:text-lg font-semibold text-primary-darkBlue">{dealTimer || 'Not set'}</p>
+                    <p className="mt-2 font-sans text-base sm:text-lg font-semibold text-primary-darkBlue">{dealTimer || 'Not set'}</p>
                 </div>
                 <div className="flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm p-5">
                     <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Deal Of The Day Ends In</h4>
-                    <p className="mt-2 text-base sm:text-lg font-semibold text-primary-darkBlue">{dealOfDayTimer || 'Not set'}</p>
+                    <p className="mt-2 font-sans text-base sm:text-lg font-semibold text-primary-darkBlue">{dealOfDayTimer || 'Not set'}</p>
                 </div>
                 <div className="flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm p-5">
                     <h4 className="text-primary-grey font-brandSerif uppercase tracking-wide text-[11px]">Mail List Subscribers</h4>
-                    <p className="mt-2 text-base sm:text-lg font-semibold text-primary-darkBlue">{Number(mailListCount || 0).toLocaleString()}</p>
+                    <p className="mt-2 font-sans text-base sm:text-lg font-semibold text-primary-darkBlue">{Number(mailListCount || 0).toLocaleString()}</p>
                 </div>
             </div>
 

@@ -146,9 +146,6 @@ const NewProduct = () => {
     const handleProductImageChange = (e) => {
         const files = Array.from(e.target.files);
 
-        setImages([]);
-        setImagesPreview([]);
-
         files.forEach((file) => {
             const reader = new FileReader();
 
@@ -161,6 +158,11 @@ const NewProduct = () => {
             reader.readAsDataURL(file);
         });
     }
+
+    const removeProductImage = (index) => {
+        setImagesPreview((prev) => prev.filter((_, i) => i !== index));
+        setImages((prev) => prev.filter((_, i) => i !== index));
+    };
 
     const updateVariant = (index, key, value) => {
         setVolumeVariants((prev) =>
@@ -925,7 +927,17 @@ const NewProduct = () => {
                     <h2 className="font-medium">Product Images</h2>
                     <div className="flex gap-2 overflow-x-auto h-32 border rounded">
                         {imagesPreview.map((image, i) => (
-                            <img draggable="false" src={image} alt="Product" key={i} className="w-full h-full object-contain" />
+                            <div key={i} className="relative flex-shrink-0 h-full">
+                                <img draggable="false" src={image} alt="Product" className="h-full w-auto object-contain" />
+                                <button
+                                    type="button"
+                                    onClick={() => removeProductImage(i)}
+                                    className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs leading-none"
+                                    title="Remove image"
+                                >
+                                    ×
+                                </button>
+                            </div>
                         ))}
                     </div>
                     <label className="rounded font-medium bg-primary-grey text-center cursor-pointer text-white p-2 shadow hover:shadow-lg my-2 hover:opacity-90">

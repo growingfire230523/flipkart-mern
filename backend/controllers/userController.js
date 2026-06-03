@@ -499,20 +499,77 @@ exports.getAdminDashboardStats = asyncErrorHandler(async (req, res) => {
     const currentYear = new Date().getFullYear();
     const years = [currentYear - 2, currentYear - 1, currentYear];
 
-    const [usersCount, productAggregate, orderSummary, orderStatusRows, salesByMonthRows] = await Promise.all([
+    const [usersCount, productAggregate, orderSummary, orderStatusRows, salesByMonthRows, uniqueOrderersCount] = await Promise.all([
         User.countDocuments(),
         Product.aggregate([
             {
                 $facet: {
                     summary: [
                         {
+                            $addFields: {
+                                // A product is OOS when:
+                                // - It's a variant product and every variant has stock <= 0, OR
+                                // - It's a plain product and its own stock <= 0
+                                _isOOS: {
+                                    $switch: {
+                                        branches: [
+                                            {
+                                                case: { $eq: ['$isVolumeProduct', true] },
+                                                then: {
+                                                    $cond: [
+                                                        { $gt: [{ $size: { $ifNull: ['$volumeVariants', []] } }, 0] },
+                                                        {
+                                                            $lte: [
+                                                                { $max: { $map: { input: '$volumeVariants', as: 'v', in: '$$v.stock' } } },
+                                                                0,
+                                                            ],
+                                                        },
+                                                        { $lte: ['$stock', 0] },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                case: { $eq: ['$isSizeProduct', true] },
+                                                then: {
+                                                    $cond: [
+                                                        { $gt: [{ $size: { $ifNull: ['$sizeVariants', []] } }, 0] },
+                                                        {
+                                                            $lte: [
+                                                                { $max: { $map: { input: '$sizeVariants', as: 'v', in: '$$v.stock' } } },
+                                                                0,
+                                                            ],
+                                                        },
+                                                        { $lte: ['$stock', 0] },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                case: { $eq: ['$isColorProduct', true] },
+                                                then: {
+                                                    $cond: [
+                                                        { $gt: [{ $size: { $ifNull: ['$colorVariants', []] } }, 0] },
+                                                        {
+                                                            $lte: [
+                                                                { $max: { $map: { input: '$colorVariants', as: 'v', in: '$$v.stock' } } },
+                                                                0,
+                                                            ],
+                                                        },
+                                                        { $lte: ['$stock', 0] },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                        default: { $lte: ['$stock', 0] },
+                                    },
+                                },
+                            },
+                        },
+                        {
                             $group: {
                                 _id: null,
                                 totalProducts: { $sum: 1 },
                                 outOfStock: {
-                                    $sum: {
-                                        $cond: [{ $lte: ['$stock', 0] }, 1, 0],
-                                    },
+                                    $sum: { $cond: ['$_isOOS', 1, 0] },
                                 },
                             },
                         },
@@ -570,6 +627,7 @@ exports.getAdminDashboardStats = asyncErrorHandler(async (req, res) => {
                 },
             },
         ]),
+        Order.distinct('user').then((ids) => ids.filter(Boolean).length),
     ]);
 
     const productSummary = productAggregate?.[0]?.summary?.[0] || {};
@@ -610,6 +668,12 @@ exports.getAdminDashboardStats = asyncErrorHandler(async (req, res) => {
             totalOrders: Number(orderSummaryRow.totalOrders || 0),
             totalProducts,
             totalUsers: Number(usersCount || 0),
+            aov: Number(orderSummaryRow.totalOrders || 0) > 0
+                ? Math.round(Number(orderSummaryRow.totalSalesAmount || 0) / Number(orderSummaryRow.totalOrders))
+                : 0,
+            conversionRate: Number(usersCount || 0) > 0
+                ? parseFloat(((Number(uniqueOrderersCount || 0) / Number(usersCount)) * 100).toFixed(1))
+                : 0,
         },
         charts: {
             yearlySales,

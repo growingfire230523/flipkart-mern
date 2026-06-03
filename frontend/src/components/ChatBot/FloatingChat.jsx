@@ -9,7 +9,6 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { addToWishlist, removeFromWishlist } from '../../actions/wishlistAction';
 import lexiChatBg from '../../assets/images/lexi_chat_bg.webp';
-import lexiVoice from '../../assets/Lexi_voice.mp3';
 import useLexyVoice from '../../hooks/useLexyVoice';
 import useLexyTTS from '../../hooks/useLexyTTS';
 import useHeyLexy from '../../hooks/useHeyLexy';
@@ -149,8 +148,6 @@ const FloatingChat = () => {
 
     const location = useLocation();
 
-    const voiceRef = useRef(null);
-    const lastChimeAtRef = useRef(0);
     const prevOpenRef = useRef(false);
     const typingTimeoutRef = useRef(null);
     const longPressTimerRef = useRef(null);
@@ -163,7 +160,6 @@ const FloatingChat = () => {
     // "Hey Lexy" wake word — opens chat + starts listening
     const handleWake = useCallback(() => {
         setOpen(true);
-        void tryPlayOpenChimeRef.current();
         setTimeout(() => {
             voice.start({
                 onFinal: (text) => {
@@ -188,32 +184,7 @@ const FloatingChat = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, voice.listening, heyLexy.wakeEnabled]);
 
-    const tryPlayOpenChime = async () => {
-        // Avoid rapid re-triggering.
-        const nowMs = Date.now();
-        if (nowMs - lastChimeAtRef.current < 600) return;
-        lastChimeAtRef.current = nowMs;
-
-        try {
-            if (!voiceRef.current) {
-                const audio = new Audio(lexiVoice);
-                audio.preload = 'auto';
-                audio.volume = 0.05;
-                voiceRef.current = audio;
-            }
-
-            const audio = voiceRef.current;
-            audio.volume = 0.05;
-            audio.currentTime = 0;
-            await audio.play();
-        } catch {
-            // Autoplay policies can block audio; ignore silently.
-        }
-    };
-
     // Stable refs for callbacks used inside useCallback closures
-    const tryPlayOpenChimeRef = useRef(tryPlayOpenChime);
-    tryPlayOpenChimeRef.current = tryPlayOpenChime;
     const sendViaVoiceRef = useRef(null); // set below after sendMessage is defined
 
     useEffect(() => {
@@ -225,11 +196,7 @@ const FloatingChat = () => {
     }, [location.search]);
 
     useEffect(() => {
-        const wasOpen = prevOpenRef.current;
         prevOpenRef.current = open;
-        if (!wasOpen && open) {
-            void tryPlayOpenChime();
-        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
@@ -469,7 +436,6 @@ const FloatingChat = () => {
     useEffect(() => {
         const handler = () => {
             if (!open) {
-                tryPlayOpenChimeRef.current();
                 setOpen(true);
             }
             setTimeout(() => handleChatMic(), 300);
@@ -492,7 +458,6 @@ const FloatingChat = () => {
             {/* Toggle button — long-press on mobile starts voice */}
             <button
                 onClick={() => {
-                    if (!open) void tryPlayOpenChime();
                     setOpen((v) => !v);
                 }}
                 onTouchStart={() => {
@@ -572,32 +537,8 @@ const FloatingChat = () => {
                     <div className="px-4 py-3 bg-[var(--lexy-maroon-75)] text-white flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <span className="font-medium">Milaari AI Assistant</span>
-                            {heyLexy.wakeListening && (
-                                <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">"Hey Milaari" on</span>
-                            )}
                         </div>
                         <div className="flex items-center gap-2">
-                            {/* TTS toggle */}
-                            <button
-                                onClick={tts.toggle}
-                                className="text-white/80 hover:text-white transition-colors"
-                                type="button"
-                                aria-label={tts.enabled ? 'Mute voice replies' : 'Enable voice replies'}
-                                title={tts.enabled ? 'Voice replies ON' : 'Voice replies OFF'}
-                            >
-                                {tts.enabled ? <VolumeUpIcon sx={{ fontSize: 20 }} /> : <VolumeOffIcon sx={{ fontSize: 20 }} />}
-                            </button>
-                            {/* Hey Lexy toggle */}
-                            <button
-                                onClick={heyLexy.toggleWake}
-                                className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
-                                    heyLexy.wakeEnabled ? 'bg-white/30 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'
-                                }`}
-                                type="button"
-                                title={heyLexy.wakeEnabled ? 'Disable "Hey Milaari"' : 'Enable "Hey Milaari"'}
-                            >
-                                Hey Milaari
-                            </button>
                             <button
                                 onClick={() => setOpen(false)}
                                 className="text-white/90 hover:text-white"
@@ -629,7 +570,7 @@ const FloatingChat = () => {
                                     <div
                                         className={
                                             m.role === 'user'
-                                                ? 'ml-auto max-w-[85%] bg-[var(--lexy-maroon-75)] text-white px-3 py-2 rounded-lg text-sm'
+                                                ? 'bg-[var(--lexy-maroon-75)] text-white px-3 py-2 rounded-lg text-sm'
                                                 : 'max-w-[85%] bg-white text-gray-800 px-3 py-2 rounded-lg text-sm border border-gray-200'
                                         }
                                     >
