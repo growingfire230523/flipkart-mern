@@ -123,6 +123,7 @@ exports.newOrder = asyncErrorHandler(async (req, res, next) => {
         orderItems,
         paymentInfo,
         totalPrice,
+        estimatedDeliveryDate,
     } = req.body;
 
     const whatsappTransactionalOptIn = req.body?.whatsappTransactionalOptIn;
@@ -148,6 +149,7 @@ exports.newOrder = asyncErrorHandler(async (req, res, next) => {
         user: req.user._id,
         orderStatus: 'Order Confirmed',
         confirmedAt: new Date(),
+        estimatedDelivery: estimatedDeliveryDate ? new Date(estimatedDeliveryDate) : undefined,
         trackingEvents: [{
             status: 'Order Confirmed',
             label: 'Order Confirmed',

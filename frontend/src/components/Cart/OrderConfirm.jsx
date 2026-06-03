@@ -1,5 +1,3 @@
-import axios from 'axios';
-import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import CartItem from './CartItem';
 import PriceSidebar from './PriceSidebar';
@@ -10,26 +8,8 @@ import MetaData from '../Layouts/MetaData';
 const OrderConfirm = () => {
 
     const navigate = useNavigate();
-    const { cartItems, shippingInfo } = useSelector((state) => state.cart);
+    const { cartItems, shippingEstimate } = useSelector((state) => state.cart);
     const { user } = useSelector((state) => state.user);
-    const [shippingEstimate, setShippingEstimate] = useState(null);
-
-    useEffect(() => {
-        if (!shippingInfo?.pincode) return;
-        let mounted = true;
-        axios
-            .get(`/api/v1/shipping/estimate?pincode=${shippingInfo.pincode}`)
-            .then(({ data }) => {
-                if (!mounted) return;
-                setShippingEstimate(data || null);
-            })
-            .catch(() => {
-                if (!mounted) return;
-                setShippingEstimate(null);
-            });
-
-        return () => { mounted = false; };
-    }, [shippingInfo?.pincode]);
 
     return (
         <>

@@ -1,4 +1,4 @@
-import { ADD_TO_CART, EMPTY_CART, REMOVE_FROM_CART, SAVE_SHIPPING_INFO, SET_CART_ITEMS } from "../constants/cartConstants";
+import { ADD_TO_CART, EMPTY_CART, REMOVE_FROM_CART, SAVE_SHIPPING_ESTIMATE, SAVE_SHIPPING_INFO, SET_CART_ITEMS } from "../constants/cartConstants";
 
 const resolveCartItemId = (item) => {
     if (!item) return '';
@@ -10,7 +10,7 @@ const resolveCartItemId = (item) => {
     return `${productId}:${size}:${volume}:${colorHex}`;
 };
 
-export const cartReducer = (state = { cartItems: [], shippingInfo: {} }, { type, payload }) => {
+export const cartReducer = (state = { cartItems: [], shippingInfo: {}, shippingEstimate: undefined }, { type, payload }) => {
     switch (type) {
         case SET_CART_ITEMS:
             return {
@@ -46,11 +46,17 @@ export const cartReducer = (state = { cartItems: [], shippingInfo: {} }, { type,
             return {
                 ...state,
                 cartItems: [],
+                shippingEstimate: undefined,
             }
         case SAVE_SHIPPING_INFO:
             return {
                 ...state,
                 shippingInfo: payload
+            }
+        case SAVE_SHIPPING_ESTIMATE:
+            return {
+                ...state,
+                shippingEstimate: payload
             }
         default:
             return state;

@@ -20,6 +20,11 @@ const PriceSidebar = ({ cartItems, shippingEstimate }) => {
     const isServiceable = shippingEstimate?.serviceable !== false;
     const deliveryLabel = formatDeliveryLabel(shippingEstimate?.estimatedDeliveryDate);
     const totalAmount = baseTotal + (isServiceable ? shippingCharge : 0);
+
+    // shippingEstimate === null  → loading (fetch in progress)
+    // shippingEstimate === undefined → not applicable (Shipping step, no estimate context)
+    // shippingEstimate === object → loaded
+    const estimateLoading = shippingEstimate === null;
     return (
         <div className="flex sticky top-16 sm:h-screen flex-col sm:w-4/12 sm:px-1">
 
@@ -30,8 +35,8 @@ const PriceSidebar = ({ cartItems, shippingEstimate }) => {
                 <div className="flex flex-col gap-4 p-6 pb-3">
                     <p className="flex justify-between">Price ({itemsCount} item) <span>₹{itemsPrice.toLocaleString()}</span></p>
                     <p className="flex justify-between">Discount <span className="text-primary-green">- ₹{itemsDiscount.toLocaleString()}</span></p>
-                    <p className="flex justify-between">Delivery Charges <span className="text-primary-green">
-                        {!isServiceable ? 'Not serviceable' : hasShippingCharge ? (shippingCharge === 0 ? 'FREE' : `₹${shippingCharge.toLocaleString()}`) : '—'}
+                    <p className="flex justify-between">Delivery Charges <span className={estimateLoading ? 'text-gray-400 animate-pulse' : 'text-primary-green'}>
+                        {estimateLoading ? 'Calculating...' : !isServiceable ? 'Not serviceable' : hasShippingCharge ? (shippingCharge === 0 ? 'FREE' : `₹${shippingCharge.toLocaleString()}`) : '—'}
                     </span></p>
                     {deliveryLabel && (
                         <p className="flex justify-between text-xs text-primary-grey">Estimated delivery <span>{deliveryLabel}</span></p>

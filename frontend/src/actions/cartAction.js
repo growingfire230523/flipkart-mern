@@ -1,5 +1,5 @@
 import axios from "axios"
-import { ADD_TO_CART, EMPTY_CART, REMOVE_FROM_CART, SAVE_SHIPPING_INFO } from "../constants/cartConstants";
+import { ADD_TO_CART, EMPTY_CART, REMOVE_FROM_CART, SAVE_SHIPPING_ESTIMATE, SAVE_SHIPPING_INFO } from "../constants/cartConstants";
 import { getActiveUserId, saveCartItemsToStorage, saveShippingInfoToStorage } from "../utils/cartStorage";
 
 const normalizeHex = (value) => {
@@ -102,14 +102,22 @@ export const emptyCart = () => async (dispatch, getState) => {
     saveCartItemsToStorage(ownerId, getState().cart.cartItems);
 }
 
-// save shipping info
+// save shipping info and pre-fetch shipping estimate
 export const saveShippingInfo = (data) => async (dispatch, getState) => {
 
-    dispatch({
-        type: SAVE_SHIPPING_INFO,
-        payload: data,
-    });
+    dispatch({ type: SAVE_SHIPPING_INFO, payload: data });
 
     const ownerId = resolveCartOwnerId(getState);
     saveShippingInfoToStorage(ownerId, data);
+
+    if (data?.pincode) {
+        // null = loading; estimate will appear instantly on next steps
+        dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: null });
+        try {
+            const { data: estimate } = await axios.get(`/api/v1/shipping/estimate?pincode=${data.pincode}`);
+            dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: estimate || undefined });
+        } catch {
+            dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: undefined });
+        }
+    }
 }
