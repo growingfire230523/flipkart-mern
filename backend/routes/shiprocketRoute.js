@@ -8,6 +8,7 @@ const {
     processReturn,
     completeRefund,
     getTracking,
+    estimateShipping,
     checkCodAvailability,
 } = require('../controllers/shiprocketController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
@@ -22,6 +23,7 @@ router.route('/order/:id/cancel').put(isAuthenticatedUser, cancelOrder);
 router.route('/order/:id/return').post(isAuthenticatedUser, requestReturn);
 router.route('/order/:id/tracking').get(isAuthenticatedUser, getTracking);
 router.route('/shipping/cod-check').get(isAuthenticatedUser, checkCodAvailability);
+router.route('/shipping/estimate').get(isAuthenticatedUser, estimateShipping);
 
 // ── Admin actions ──────────────────────────────────────────────────
 router.route('/admin/order/:id/ship').post(isAuthenticatedUser, authorizeRoles('admin'), createShipment);

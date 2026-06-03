@@ -670,6 +670,107 @@ async function updateStock(id, quantity) {
     }
 }
 
+// ── Shipping Estimate (cost + ETA) ───────────────────────────────
+// GET /api/v1/shipping/estimate?pincode=110001&weight=0.5&cod=false
+exports.estimateShipping = asyncErrorHandler(async (req, res, next) => {
+    const { pincode, weight, cod } = req.query;
+    if (!pincode) return next(new ErrorHandler('Pincode is required.', 400));
+
+    const pickupPincode = process.env.SHIPROCKET_PICKUP_PINCODE || '110001';
+    const weightValue = Number(weight) > 0 ? Number(weight) : 0.5;
+    const isCod = String(cod || '').toLowerCase() === 'true' || String(cod || '') === '1';
+
+    const fallbackDays = Number(process.env.DEFAULT_DELIVERY_DAYS || 7);
+    const fallbackDate = new Date();
+    fallbackDate.setDate(fallbackDate.getDate() + fallbackDays);
+
+    if (!shiprocket.isConfigured()) {
+        return res.status(200).json({
+            success: true,
+            serviceable: true,
+            shippingCharge: 0,
+            estimatedDeliveryDays: fallbackDays,
+            estimatedDeliveryDate: fallbackDate.toISOString(),
+            source: 'fallback',
+            message: 'Shipping provider not configured. Showing default estimate.',
+        });
+    }
+
+    try {
+        const result = await shiprocket.checkServiceability({
+            pickupPincode,
+            deliveryPincode: String(pincode),
+            weight: weightValue,
+            cod: isCod,
+        });
+
+        const couriers = result?.data?.available_courier_companies || [];
+        if (!couriers.length) {
+            return res.status(200).json({
+                success: true,
+                serviceable: false,
+                shippingCharge: null,
+                estimatedDeliveryDays: null,
+                estimatedDeliveryDate: null,
+                message: 'No serviceable courier available for this pincode.',
+            });
+        }
+
+        const pick = couriers.reduce((best, current) => {
+            if (!best) return current;
+            const bestCharge = Number(best.freight_charge || best.rate || 0) + (isCod ? Number(best.cod_charges || 0) : 0);
+            const currentCharge = Number(current.freight_charge || current.rate || 0) + (isCod ? Number(current.cod_charges || 0) : 0);
+            return currentCharge < bestCharge ? current : best;
+        }, null);
+
+        const shippingCharge = Number(pick.freight_charge || pick.rate || 0) + (isCod ? Number(pick.cod_charges || 0) : 0);
+        const etaDays = Number(pick.estimated_delivery_days || 0);
+        let estimatedDeliveryDate = null;
+        let estimatedDeliveryDays = null;
+
+        if (Number.isFinite(etaDays) && etaDays > 0) {
+            estimatedDeliveryDays = etaDays;
+            const dt = new Date();
+            dt.setDate(dt.getDate() + etaDays);
+            estimatedDeliveryDate = dt.toISOString();
+        } else if (pick.etd || pick.estimated_delivery_date) {
+            const raw = pick.etd || pick.estimated_delivery_date;
+            const dt = new Date(raw);
+            if (!Number.isNaN(dt.getTime())) {
+                estimatedDeliveryDate = dt.toISOString();
+            }
+        }
+
+        if (!estimatedDeliveryDate) {
+            estimatedDeliveryDays = fallbackDays;
+            estimatedDeliveryDate = fallbackDate.toISOString();
+        }
+
+        return res.status(200).json({
+            success: true,
+            serviceable: true,
+            shippingCharge: Number.isFinite(shippingCharge) ? shippingCharge : 0,
+            estimatedDeliveryDays,
+            estimatedDeliveryDate,
+            courier: {
+                name: pick.courier_name || '',
+                rating: pick.rating || null,
+            },
+        });
+    } catch (err) {
+        console.warn('[estimateShipping] Shiprocket check failed:', err.message);
+        return res.status(200).json({
+            success: true,
+            serviceable: true,
+            shippingCharge: 0,
+            estimatedDeliveryDays: fallbackDays,
+            estimatedDeliveryDate: fallbackDate.toISOString(),
+            source: 'fallback',
+            message: 'Unable to verify. Showing default estimate.',
+        });
+    }
+});
+
 // ── COD Serviceability Check ───────────────────────────────────────
 // GET /api/v1/shipping/cod-check?pincode=110001
 exports.checkCodAvailability = asyncErrorHandler(async (req, res, next) => {

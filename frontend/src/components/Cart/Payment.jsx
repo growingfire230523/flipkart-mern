@@ -19,12 +19,32 @@ const Payment = () => {
     const [paymentMode, setPaymentMode] = useState('razorpay');
     const [codAvailable, setCodAvailable] = useState(true);
     const [codChecking, setCodChecking] = useState(false);
+    const [shippingEstimate, setShippingEstimate] = useState(null);
 
     const { shippingInfo, cartItems } = useSelector((state) => state.cart);
     const { user } = useSelector((state) => state.user);
     const { loading: orderLoading, order, error: orderError } = useSelector((state) => state.newOrder);
 
-    const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const baseTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shippingCharge = Number.isFinite(Number(shippingEstimate?.shippingCharge)) ? Number(shippingEstimate?.shippingCharge) : 0;
+    const totalPrice = baseTotal + (shippingEstimate?.serviceable === false ? 0 : shippingCharge);
+
+    useEffect(() => {
+        if (!shippingInfo?.pincode) return;
+        let mounted = true;
+        axios
+            .get(`/api/v1/shipping/estimate?pincode=${shippingInfo.pincode}`)
+            .then(({ data }) => {
+                if (!mounted) return;
+                setShippingEstimate(data || null);
+            })
+            .catch(() => {
+                if (!mounted) return;
+                setShippingEstimate(null);
+            });
+
+        return () => { mounted = false; };
+    }, [shippingInfo?.pincode]);
 
     // Check COD availability based on pincode (Shiprocket serviceability)
     useEffect(() => {
@@ -292,7 +312,7 @@ const Payment = () => {
                         </Stepper>
                     </div>
 
-                    <PriceSidebar cartItems={cartItems} />
+                    <PriceSidebar cartItems={cartItems} shippingEstimate={shippingEstimate} />
                 </div>
             </main>
         </>
