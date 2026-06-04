@@ -1,16 +1,15 @@
 import TextField from '@mui/material/TextField';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import MenuItem from '@mui/material/MenuItem';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { useNavigate, useParams } from 'react-router-dom';
 import { REMOVE_PRODUCT_DETAILS, UPDATE_PRODUCT_RESET } from '../../constants/productConstants';
 import { clearErrors, getProductDetails, updateProduct } from '../../actions/productAction';
-import ImageIcon from '@mui/icons-material/Image';
 import BackdropLoader from '../Layouts/BackdropLoader';
 import { categories, subCategoriesByCategory } from '../../utils/constants';
 import MetaData from '../Layouts/MetaData';
+import axios from 'axios';
 
 const normalizeHex = (value) => {
     const raw = String(value || '').trim();
@@ -46,11 +45,33 @@ const UpdateProduct = () => {
     });
 
     const [name, setName] = useState("");
+    const [hsn, setHsn] = useState("");
+    const [itemCode, setItemCode] = useState("");
     const [description, setDescription] = useState("");
-    const [price, setPrice] = useState(0);
-    const [cuttedPrice, setCuttedPrice] = useState(0);
-    const [category, setCategory] = useState("");
-    const [subCategory, setSubCategory] = useState("");
+    const [descAiLoading, setDescAiLoading] = useState(false);
+    const [salePrice, setSalePrice] = useState(0);
+    const [saleTax, setSaleTax] = useState("without_tax");
+    const [saleDiscount, setSaleDiscount] = useState(0);
+    const [saleDiscountType, setSaleDiscountType] = useState("percentage");
+    const [wholesalePrice, setWholesalePrice] = useState(0);
+    const [wholesaleTax, setWholesaleTax] = useState("without_tax");
+    const [minWholesaleQty, setMinWholesaleQty] = useState(1);
+    const [purchasePrice, setPurchasePrice] = useState(0);
+    const [purchaseTax, setPurchaseTax] = useState("without_tax");
+    const [taxSlab, setTaxSlab] = useState("none");
+    const [openingQty, setOpeningQty] = useState(0);
+    const [openingAtPrice, setOpeningAtPrice] = useState(0);
+    const [openingAsOfDate, setOpeningAsOfDate] = useState("");
+    const [minStockToMaintain, setMinStockToMaintain] = useState(0);
+    const [stockLocation, setStockLocation] = useState("");
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [selectedSubCategories, setSelectedSubCategories] = useState([]);
+    const [sessionExtraCategories, setSessionExtraCategories] = useState([]);
+    const [sessionExtraSubCategories, setSessionExtraSubCategories] = useState([]);
+    const [newCategoryInput, setNewCategoryInput] = useState("");
+    const [newSubCategoryInput, setNewSubCategoryInput] = useState("");
+    const [categorySearch, setCategorySearch] = useState("");
+    const [subCategorySearch, setSubCategorySearch] = useState("");
     const [stock, setStock] = useState(0);
     const [warranty, setWarranty] = useState(0);
     const [brand, setBrand] = useState("");
@@ -59,7 +80,6 @@ const UpdateProduct = () => {
     const [imagesPreview, setImagesPreview] = useState([]);
 
     const [logo, setLogo] = useState("");
-    const [logoPreview, setLogoPreview] = useState("");
 
     const [isVolumeProduct, setIsVolumeProduct] = useState(false);
     const [volumeVariants, setVolumeVariants] = useState([
@@ -131,17 +151,12 @@ const UpdateProduct = () => {
 
     const handleLogoChange = (e) => {
         const reader = new FileReader();
-
         setLogo("");
-        setLogoPreview("");
-
         reader.onload = () => {
             if (reader.readyState === 2) {
-                setLogoPreview(reader.result);
                 setLogo(reader.result);
             }
         };
-
         reader.readAsDataURL(e.target.files[0]);
     }
 
@@ -164,6 +179,62 @@ const UpdateProduct = () => {
             reader.readAsDataURL(file);
         });
     }
+
+    const generateItemCode = () => {
+        const code = Array.from({ length: 13 }, () => Math.floor(Math.random() * 10)).join('');
+        setItemCode(code);
+    };
+
+    const generateDescription = async () => {
+        if (!name.trim()) {
+            enqueueSnackbar('Enter Item Name first', { variant: 'warning' });
+            return;
+        }
+        setDescAiLoading(true);
+        try {
+            const { data } = await axios.post('/api/v1/admin/product/generate-description', { name }, { withCredentials: true });
+            setDescription(data.description);
+        } catch (err) {
+            enqueueSnackbar(err?.response?.data?.message || 'AI generation failed', { variant: 'error' });
+        } finally {
+            setDescAiLoading(false);
+        }
+    };
+
+    const allCategories = useMemo(
+        () => Array.from(new Set([...categories, ...sessionExtraCategories])),
+        [sessionExtraCategories]
+    );
+    const allSubCategories = useMemo(
+        () => Array.from(new Set([
+            ...selectedCategories.flatMap((cat) => subCategoriesByCategory[cat] || []),
+            ...sessionExtraSubCategories,
+        ])),
+        [selectedCategories, sessionExtraSubCategories]
+    );
+
+    const toggleCategory = (cat) => {
+        setSelectedCategories((prev) =>
+            prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+        );
+    };
+    const toggleSubCategory = (sub) => {
+        setSelectedSubCategories((prev) =>
+            prev.includes(sub) ? prev.filter((s) => s !== sub) : [...prev, sub]
+        );
+    };
+    const addNewCategory = () => {
+        const v = newCategoryInput.trim().toUpperCase();
+        if (!v || allCategories.includes(v)) return;
+        setSessionExtraCategories((prev) => [...prev, v]);
+        setNewCategoryInput("");
+    };
+    const addNewSubCategory = () => {
+        const v = newSubCategoryInput.trim();
+        if (!v || allSubCategories.includes(v)) return;
+        setSessionExtraSubCategories((prev) => [...prev, v]);
+        setNewSubCategoryInput("");
+    };
 
     const updateVariant = (index, key, value) => {
         setVolumeVariants((prev) =>
@@ -246,8 +317,7 @@ const UpdateProduct = () => {
         const first = volumeVariants.find((v) => String(v?.volume || "").trim() && Number(v?.price) > 0);
         if (!first) return;
 
-        setPrice(Number(first.price) || 0);
-        setCuttedPrice(Number(first.cuttedPrice) || Number(first.price) || 0);
+        setSalePrice(Number(first.price) || 0);
 
         const totalStock = volumeVariants.reduce((sum, v) => sum + (Number(v?.stock) || 0), 0);
         setStock(totalStock);
@@ -260,8 +330,7 @@ const UpdateProduct = () => {
         const first = sizeVariants.find((v) => String(v?.size || "").trim() && Number(v?.price) > 0);
         if (!first) return;
 
-        setPrice(Number(first.price) || 0);
-        setCuttedPrice(Number(first.cuttedPrice) || Number(first.price) || 0);
+        setSalePrice(Number(first.price) || 0);
 
         const totalStock = sizeVariants.reduce((sum, v) => sum + (Number(v?.stock) || 0), 0);
         setStock(totalStock);
@@ -274,8 +343,7 @@ const UpdateProduct = () => {
         const first = colorVariants.find((v) => String(v?.name || '').trim() && normalizeHex(v?.hex) && Number(v?.price) > 0);
         if (!first) return;
 
-        setPrice(Number(first.price) || 0);
-        setCuttedPrice(Number(first.cuttedPrice) || Number(first.price) || 0);
+        setSalePrice(Number(first.price) || 0);
 
         const totalStock = colorVariants.reduce((sum, v) => sum + (Number(v?.stock) || 0), 0);
         setStock(totalStock);
@@ -305,37 +373,25 @@ const UpdateProduct = () => {
     const newProductSubmitHandler = (e) => {
         e.preventDefault();
 
-        // required field checks
+        if (selectedCategories.length === 0) {
+            enqueueSnackbar("Select at least one Category", { variant: "warning" });
+            return;
+        }
+        if (selectedSubCategories.length === 0) {
+            enqueueSnackbar("Select at least one Sub Category", { variant: "warning" });
+            return;
+        }
         if (highlights.length <= 0) {
             enqueueSnackbar("Add Highlights", { variant: "warning" });
             return;
         }
-        if (specs.length <= 1) {
-            enqueueSnackbar("Add Minimum 2 Specifications", { variant: "warning" });
-            return;
-        }
 
-        if (!subCategory) {
-            enqueueSnackbar("Select Sub Category", { variant: "warning" });
-            return;
-        }
-
-        const formData = new FormData();
-
-        formData.set("name", name);
-        formData.set("description", description);
-        formData.set("price", price);
-        formData.set("cuttedPrice", cuttedPrice);
-        formData.set("category", category);
-        formData.set("subCategory", subCategory);
-        formData.set("stock", stock);
-        formData.set("warranty", warranty);
-        formData.set("brandname", brand);
-        formData.set("logo", logo);
-
-        formData.set("isGiftable", isGiftable);
-
-        formData.set("isVolumeProduct", isVolumeProduct);
+        const salePriceNum = Number(salePrice) || 0;
+        const saleDiscountNum = Number(saleDiscount) || 0;
+        const computedPrice = saleDiscountType === 'percentage'
+            ? Math.round(salePriceNum * (1 - saleDiscountNum / 100))
+            : Math.max(0, salePriceNum - saleDiscountNum);
+        const computedCuttedPrice = salePriceNum;
 
         const cleanedVariants = isVolumeProduct
             ? volumeVariants
@@ -353,12 +409,6 @@ const UpdateProduct = () => {
             return;
         }
 
-        cleanedVariants.forEach((v) => {
-            formData.append("volumeVariants", JSON.stringify(v));
-        });
-
-        formData.set("isSizeProduct", isSizeProduct);
-
         const cleanedSizeVariants = isSizeProduct
             ? sizeVariants
                 .map((v) => ({
@@ -374,12 +424,6 @@ const UpdateProduct = () => {
             enqueueSnackbar("Add at least one size variant", { variant: "warning" });
             return;
         }
-
-        cleanedSizeVariants.forEach((v) => {
-            formData.append("sizeVariants", JSON.stringify(v));
-        });
-
-        formData.set('isColorProduct', isColorProduct);
 
         const cleanedColorVariants = isColorProduct
             ? colorVariants
@@ -398,25 +442,47 @@ const UpdateProduct = () => {
             return;
         }
 
-        cleanedColorVariants.forEach((v) => {
-            formData.append('colorVariants', JSON.stringify(v));
-        });
-
-        images.forEach((image) => {
-            formData.append("images", image);
-        });
-
-        highlights.forEach((h) => {
-            formData.append("highlights", h);
-        });
-
-        // Always send these fields so admins can clear tags.
+        const formData = new FormData();
+        formData.set("name", name);
+        formData.set("hsn", hsn);
+        formData.set("itemCode", itemCode);
+        formData.set("description", description);
+        formData.set("price", computedPrice);
+        formData.set("cuttedPrice", computedCuttedPrice);
+        formData.set("saleTax", saleTax);
+        formData.set("saleDiscount", saleDiscountNum);
+        formData.set("saleDiscountType", saleDiscountType);
+        formData.set("wholesalePrice", Number(wholesalePrice) || 0);
+        formData.set("wholesaleTax", wholesaleTax);
+        formData.set("minWholesaleQty", Number(minWholesaleQty) || 1);
+        formData.set("purchasePrice", Number(purchasePrice) || 0);
+        formData.set("purchaseTax", purchaseTax);
+        formData.set("taxSlab", taxSlab);
+        formData.set("openingQty", Number(openingQty) || 0);
+        formData.set("openingAtPrice", Number(openingAtPrice) || 0);
+        formData.set("openingAsOfDate", openingAsOfDate || '');
+        formData.set("minStockToMaintain", Number(minStockToMaintain) || 0);
+        formData.set("stockLocation", stockLocation);
+        formData.set("category", selectedCategories[0] || "");
+        formData.set("categories", JSON.stringify(selectedCategories));
+        formData.set("subCategory", selectedSubCategories[0] || "");
+        formData.set("subCategories", JSON.stringify(selectedSubCategories));
+        formData.set("stock", stock);
+        formData.set("warranty", warranty);
+        formData.set("brandname", brand);
+        formData.set("logo", logo || "");
+        formData.set("isGiftable", isGiftable);
+        formData.set("isVolumeProduct", isVolumeProduct);
+        cleanedVariants.forEach((v) => { formData.append("volumeVariants", JSON.stringify(v)); });
+        formData.set("isSizeProduct", isSizeProduct);
+        cleanedSizeVariants.forEach((v) => { formData.append("sizeVariants", JSON.stringify(v)); });
+        formData.set('isColorProduct', isColorProduct);
+        cleanedColorVariants.forEach((v) => { formData.append('colorVariants', JSON.stringify(v)); });
+        images.forEach((image) => { formData.append("images", image); });
+        highlights.forEach((h) => { formData.append("highlights", h); });
         formData.set('catalogHighlightNormal', JSON.stringify(catalogNormalHighlights));
         formData.set('catalogHighlightActive', JSON.stringify(catalogActiveHighlights));
-
-        specs.forEach((s) => {
-            formData.append("specifications", JSON.stringify(s));
-        });
+        specs.forEach((s) => { formData.append("specifications", JSON.stringify(s)); });
 
         dispatch(updateProduct(params.id, formData));
     }
@@ -429,11 +495,26 @@ const UpdateProduct = () => {
             dispatch(getProductDetails(productId));
         } else {
             setName(product.name);
+            setHsn(product.hsn || "");
+            setItemCode(product.itemCode || "");
             setDescription(product.description);
-            setPrice(product.price);
-            setCuttedPrice(product.cuttedPrice);
-            setCategory(product.category);
-            setSubCategory(product.subCategory || "");
+            setSalePrice(product.cuttedPrice || product.price || 0);
+            setSaleTax(product.saleTax || "without_tax");
+            setSaleDiscount(product.saleDiscount || 0);
+            setSaleDiscountType(product.saleDiscountType || "percentage");
+            setWholesalePrice(product.wholesalePrice || 0);
+            setWholesaleTax(product.wholesaleTax || "without_tax");
+            setMinWholesaleQty(product.minWholesaleQty || 1);
+            setPurchasePrice(product.purchasePrice || 0);
+            setPurchaseTax(product.purchaseTax || "without_tax");
+            setTaxSlab(product.taxSlab || "none");
+            setOpeningQty(product.openingQty || 0);
+            setOpeningAtPrice(product.openingAtPrice || 0);
+            setOpeningAsOfDate(product.openingAsOfDate ? new Date(product.openingAsOfDate).toISOString().split('T')[0] : "");
+            setMinStockToMaintain(product.minStockToMaintain || 0);
+            setStockLocation(product.stockLocation || "");
+            setSelectedCategories(Array.isArray(product.categories) && product.categories.length > 0 ? product.categories : (product.category ? [product.category] : []));
+            setSelectedSubCategories(Array.isArray(product.subCategories) && product.subCategories.length > 0 ? product.subCategories : (product.subCategory ? [product.subCategory] : []));
             setStock(product.stock);
             setWarranty(product.warranty);
             setBrand(product.brand.name);
@@ -442,45 +523,24 @@ const UpdateProduct = () => {
             setCatalogActiveHighlights(Array.isArray(product?.catalogHighlights?.active) ? product.catalogHighlights.active : []);
             setSpecs(product.specifications);
             setOldImages(product.images);
-            setLogoPreview(product.brand.logo.url);
-
             setIsVolumeProduct(Boolean(product.isVolumeProduct));
             if (Array.isArray(product.volumeVariants) && product.volumeVariants.length > 0) {
-                setVolumeVariants(product.volumeVariants.map((v) => ({
-                    volume: v.volume,
-                    price: v.price,
-                    cuttedPrice: v.cuttedPrice,
-                    stock: v.stock,
-                })));
+                setVolumeVariants(product.volumeVariants.map((v) => ({ volume: v.volume, price: v.price, cuttedPrice: v.cuttedPrice, stock: v.stock })));
             } else {
                 setVolumeVariants([{ volume: "", price: 0, cuttedPrice: 0, stock: 0 }]);
             }
-
             setIsSizeProduct(Boolean(product.isSizeProduct));
             if (Array.isArray(product.sizeVariants) && product.sizeVariants.length > 0) {
-                setSizeVariants(product.sizeVariants.map((v) => ({
-                    size: v.size,
-                    price: v.price,
-                    cuttedPrice: v.cuttedPrice,
-                    stock: v.stock,
-                })));
+                setSizeVariants(product.sizeVariants.map((v) => ({ size: v.size, price: v.price, cuttedPrice: v.cuttedPrice, stock: v.stock })));
             } else {
                 setSizeVariants([{ size: "", price: 0, cuttedPrice: 0, stock: 0 }]);
             }
-
             setIsColorProduct(Boolean(product.isColorProduct));
             if (Array.isArray(product.colorVariants) && product.colorVariants.length > 0) {
-                setColorVariants(product.colorVariants.map((v) => ({
-                    name: String(v?.name || ''),
-                    hex: normalizeHex(v?.hex),
-                    price: Number(v?.price) || 0,
-                    cuttedPrice: Number(v?.cuttedPrice) || 0,
-                    stock: Number(v?.stock) || 0,
-                })));
+                setColorVariants(product.colorVariants.map((v) => ({ name: String(v?.name || ''), hex: normalizeHex(v?.hex), price: Number(v?.price) || 0, cuttedPrice: Number(v?.cuttedPrice) || 0, stock: Number(v?.stock) || 0 })));
             } else {
                 setColorVariants([{ name: '', hex: '', price: 0, cuttedPrice: 0, stock: 0 }]);
             }
-
             setIsGiftable(Boolean(product.isGiftable));
         }
         if (error) {
@@ -499,10 +559,6 @@ const UpdateProduct = () => {
         }
     }, [dispatch, error, updateError, isUpdated, productId, product, navigate, enqueueSnackbar]);
 
-    useEffect(() => {
-        setSubCategory("");
-    }, [category]);
-
     return (
         <>
             <MetaData title="Admin: Update Product | Flipkart" />
@@ -512,55 +568,136 @@ const UpdateProduct = () => {
             <form onSubmit={newProductSubmitHandler} encType="multipart/form-data" className="flex flex-col sm:flex-row bg-white rounded-lg shadow p-4" id="mainform">
 
                 <div className="flex flex-col gap-3 m-2 sm:w-1/2">
-                    <TextField
-                        label="Name"
-                        variant="outlined"
-                        size="small"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    <TextField
-                        label="Description"
-                        multiline
-                        rows={3}
-                        required
-                        variant="outlined"
-                        size="small"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    />
-                    <div className="flex justify-between">
+                    <div className="flex gap-3">
                         <TextField
-                            label="Price"
-                            type="number"
+                            label="Item Name"
                             variant="outlined"
                             size="small"
-                            InputProps={{
-                                inputProps: {
-                                    min: 0
-                                }
-                            }}
                             required
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                            disabled={isVolumeProduct || isSizeProduct || isColorProduct}
+                            fullWidth
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                         />
                         <TextField
-                            label="Cutted Price"
-                            type="number"
+                            label="Item HSN"
                             variant="outlined"
                             size="small"
-                            InputProps={{
-                                inputProps: {
-                                    min: 0
-                                }
-                            }}
-                            required
-                            value={cuttedPrice}
-                            onChange={(e) => setCuttedPrice(e.target.value)}
-                            disabled={isVolumeProduct || isSizeProduct || isColorProduct}
+                            value={hsn}
+                            onChange={(e) => setHsn(e.target.value)}
                         />
+                    </div>
+                    <div className="flex gap-3 items-center">
+                        <TextField
+                            label="Item Code"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={itemCode}
+                            onChange={(e) => setItemCode(e.target.value)}
+                            placeholder="13-digit code"
+                        />
+                        <button
+                            type="button"
+                            onClick={generateItemCode}
+                            className="px-3 py-2 text-xs bg-gray-600 text-white rounded hover:opacity-90 whitespace-nowrap"
+                        >
+                            Generate Code
+                        </button>
+                    </div>
+                    <div className="flex flex-col">
+                        <div className="flex justify-end mb-1">
+                            <button
+                                type="button"
+                                onClick={generateDescription}
+                                disabled={descAiLoading || !name.trim()}
+                                className="px-2.5 py-0.5 text-xs bg-gradient-to-r from-violet-500 to-indigo-500 text-white rounded font-semibold hover:opacity-90 disabled:opacity-50"
+                            >
+                                {descAiLoading ? 'Generating...' : '✨ AI'}
+                            </button>
+                        </div>
+                        <TextField
+                            label="Description"
+                            multiline
+                            minRows={3}
+                            required
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            inputProps={{ style: { resize: 'vertical', overflow: 'auto' } }}
+                        />
+                    </div>
+                    {/* Sale Price */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Sale Price</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <TextField label="Sale Price" type="number" variant="outlined" size="small" required value={salePrice} onChange={(e) => setSalePrice(e.target.value)} disabled={isVolumeProduct || isSizeProduct || isColorProduct} InputProps={{ inputProps: { min: 0 } }} sx={{ flex: 2, minWidth: 100 }} />
+                            <select value={saleTax} onChange={(e) => setSaleTax(e.target.value)} className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white" style={{ flex: 1.5, minWidth: 110 }}>
+                                <option value="without_tax">Excl. Tax</option>
+                                <option value="with_tax">Incl. Tax</option>
+                            </select>
+                            <TextField label="Discount" type="number" variant="outlined" size="small" value={saleDiscount} onChange={(e) => setSaleDiscount(e.target.value)} disabled={isVolumeProduct || isSizeProduct || isColorProduct} InputProps={{ inputProps: { min: 0 } }} sx={{ flex: 1.5, minWidth: 80 }} />
+                            <select value={saleDiscountType} onChange={(e) => setSaleDiscountType(e.target.value)} className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white" style={{ flex: 1, minWidth: 70 }}>
+                                <option value="percentage">%</option>
+                                <option value="amount">₹</option>
+                            </select>
+                        </div>
+                        {Number(salePrice) > 0 && (
+                            <p className="text-xs text-gray-500 mt-1">Selling price: <span className="font-semibold text-green-700">₹{saleDiscountType === 'percentage' ? Math.round(Number(salePrice) * (1 - Number(saleDiscount) / 100)) : Math.max(0, Number(salePrice) - Number(saleDiscount))}</span> (MRP ₹{Number(salePrice)} crossed out)</p>
+                        )}
+                    </div>
+                    {/* Wholesale Price */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Wholesale Price</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <TextField label="Wholesale Price" type="number" variant="outlined" size="small" value={wholesalePrice} onChange={(e) => setWholesalePrice(e.target.value)} InputProps={{ inputProps: { min: 0 } }} sx={{ flex: 2, minWidth: 120 }} />
+                            <select value={wholesaleTax} onChange={(e) => setWholesaleTax(e.target.value)} className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white" style={{ flex: 1.5, minWidth: 110 }}>
+                                <option value="without_tax">Excl. Tax</option>
+                                <option value="with_tax">Incl. Tax</option>
+                            </select>
+                            <TextField label="Min. Wholesale Qty" type="number" variant="outlined" size="small" value={minWholesaleQty} onChange={(e) => setMinWholesaleQty(e.target.value)} InputProps={{ inputProps: { min: 1 } }} sx={{ flex: 2, minWidth: 120 }} />
+                        </div>
+                    </div>
+                    {/* Purchase Price */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Purchase Price</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <TextField label="Purchase Price" type="number" variant="outlined" size="small" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} InputProps={{ inputProps: { min: 0 } }} sx={{ flex: 2, minWidth: 120 }} />
+                            <select value={purchaseTax} onChange={(e) => setPurchaseTax(e.target.value)} className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white" style={{ flex: 1.5, minWidth: 110 }}>
+                                <option value="without_tax">Excl. Tax</option>
+                                <option value="with_tax">Incl. Tax</option>
+                            </select>
+                        </div>
+                    </div>
+                    {/* Taxes */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Taxes</p>
+                        <select value={taxSlab} onChange={(e) => setTaxSlab(e.target.value)} className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white w-full">
+                            <option value="none">None</option>
+                            <option value="igst_0">IGST@0%</option><option value="gst_0">GST@0%</option>
+                            <option value="igst_0.25">IGST@0.25%</option><option value="gst_0.25">GST@0.25%</option>
+                            <option value="igst_3">IGST@3%</option><option value="gst_3">GST@3%</option>
+                            <option value="igst_5">IGST@5%</option><option value="gst_5">GST@5%</option>
+                            <option value="igst_12">IGST@12%</option><option value="gst_12">GST@12%</option>
+                            <option value="igst_18">IGST@18%</option><option value="gst_18">GST@18%</option>
+                            <option value="igst_28">IGST@28%</option><option value="gst_28">GST@28%</option>
+                            <option value="igst_40">IGST@40%</option><option value="gst_40">GST@40%</option>
+                            <option value="exempt">Exempt</option>
+                        </select>
+                    </div>
+                    {/* Stock */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Stock</p>
+                        <div className="flex gap-2 flex-wrap">
+                            <TextField label="Opening Quantity" type="number" variant="outlined" size="small" value={openingQty} onChange={(e) => setOpeningQty(e.target.value)} InputProps={{ inputProps: { min: 0 } }} sx={{ flex: 2, minWidth: 120 }} />
+                            <TextField label="At Price" type="number" variant="outlined" size="small" value={openingAtPrice} onChange={(e) => setOpeningAtPrice(e.target.value)} InputProps={{ inputProps: { min: 0 } }} sx={{ flex: 2, minWidth: 100 }} />
+                            <TextField label="As of Date" type="date" variant="outlined" size="small" value={openingAsOfDate} onChange={(e) => setOpeningAsOfDate(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ flex: 2, minWidth: 140 }} />
+                        </div>
+                        <div className="flex gap-2 flex-wrap mt-2">
+                            <TextField label="Min. Stock to Maintain" type="number" variant="outlined" size="small" value={minStockToMaintain} onChange={(e) => setMinStockToMaintain(e.target.value)} InputProps={{ inputProps: { min: 0 } }} sx={{ flex: 2, minWidth: 160 }} />
+                            <TextField label="Location" variant="outlined" size="small" value={stockLocation} onChange={(e) => setStockLocation(e.target.value)} placeholder="e.g. Warehouse A" sx={{ flex: 3, minWidth: 160 }} />
+                        </div>
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -827,69 +964,51 @@ const UpdateProduct = () => {
                             Show gifting ribbon
                         </label>
                     </div>
-                    <div className="flex justify-between gap-4">
-                        <TextField
-                            label="Category"
-                            select
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            required
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                        >
-                            {categories.map((el, i) => (
-                                <MenuItem value={el} key={i}>
-                                    {el}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                        <TextField
-                            label="Sub Category"
-                            select
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            required
-                            disabled={!category}
-                            value={subCategory}
-                            onChange={(e) => setSubCategory(e.target.value)}
-                        >
-                            {(Array.from(new Set(subCategoriesByCategory?.[category] ?? []))).map((el, i) => (
-                                <MenuItem value={el} key={i}>
-                                    {el}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                        <TextField
-                            label="Stock"
-                            type="number"
-                            variant="outlined"
-                            size="small"
-                            InputProps={{
-                                inputProps: {
-                                    min: 0
-                                }
-                            }}
-                            required
-                            value={stock}
-                            onChange={(e) => setStock(e.target.value)}
-                            disabled={isVolumeProduct || isSizeProduct || isColorProduct}
-                        />
-                        <TextField
-                            label="Warranty"
-                            type="number"
-                            variant="outlined"
-                            size="small"
-                            InputProps={{
-                                inputProps: {
-                                    min: 0
-                                }
-                            }}
-                            required
-                            value={warranty}
-                            onChange={(e) => setWarranty(e.target.value)}
-                        />
+                    <div className="flex gap-4">
+                        {/* Category multiselect panel */}
+                        <div className="flex-1 flex flex-col gap-1 border rounded p-2">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Category *</span>
+                                {selectedCategories.length > 0 && <span className="text-[10px] text-primary-blue font-medium">{selectedCategories.length} selected</span>}
+                            </div>
+                            <input type="text" placeholder="Search categories..." value={categorySearch} onChange={(e) => setCategorySearch(e.target.value)} className="text-xs border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-primary-blue mb-1" />
+                            <div className="max-h-44 overflow-y-auto flex flex-col gap-0.5">
+                                {allCategories.filter((c) => c.toLowerCase().includes(categorySearch.toLowerCase())).map((cat) => (
+                                    <label key={cat} className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer text-xs hover:bg-gray-50 ${selectedCategories.includes(cat) ? 'bg-primary-blue/10 font-semibold text-primary-blue' : 'text-gray-700'}`}>
+                                        <input type="checkbox" checked={selectedCategories.includes(cat)} onChange={() => toggleCategory(cat)} className="accent-primary-blue" />
+                                        {cat}
+                                    </label>
+                                ))}
+                            </div>
+                            <div className="flex items-center gap-1 mt-1 border-t pt-1">
+                                <input type="text" placeholder="Add new category…" value={newCategoryInput} onChange={(e) => setNewCategoryInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addNewCategory())} className="text-xs border rounded px-2 py-1 flex-1 outline-none focus:ring-1 focus:ring-primary-blue" />
+                                <button type="button" onClick={addNewCategory} className="text-xs px-2 py-1 bg-primary-blue text-white rounded hover:opacity-90">Add</button>
+                            </div>
+                        </div>
+                        {/* Sub Category multiselect panel */}
+                        <div className="flex-1 flex flex-col gap-1 border rounded p-2">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sub Category *</span>
+                                {selectedSubCategories.length > 0 && <span className="text-[10px] text-primary-blue font-medium">{selectedSubCategories.length} selected</span>}
+                            </div>
+                            <input type="text" placeholder="Search subcategories..." value={subCategorySearch} onChange={(e) => setSubCategorySearch(e.target.value)} className="text-xs border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-primary-blue mb-1" />
+                            <div className="max-h-44 overflow-y-auto flex flex-col gap-0.5">
+                                {selectedCategories.length === 0 && sessionExtraSubCategories.length === 0 ? (
+                                    <p className="text-xs text-gray-400 px-2 py-1">Select a category first, or add below.</p>
+                                ) : (
+                                    allSubCategories.filter((s) => s.toLowerCase().includes(subCategorySearch.toLowerCase())).map((sub) => (
+                                        <label key={sub} className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer text-xs hover:bg-gray-50 ${selectedSubCategories.includes(sub) ? 'bg-primary-blue/10 font-semibold text-primary-blue' : 'text-gray-700'}`}>
+                                            <input type="checkbox" checked={selectedSubCategories.includes(sub)} onChange={() => toggleSubCategory(sub)} className="accent-primary-blue" />
+                                            {sub}
+                                        </label>
+                                    ))
+                                )}
+                            </div>
+                            <div className="flex items-center gap-1 mt-1 border-t pt-1">
+                                <input type="text" placeholder="Add new subcategory…" value={newSubCategoryInput} onChange={(e) => setNewSubCategoryInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addNewSubCategory())} className="text-xs border rounded px-2 py-1 flex-1 outline-none focus:ring-1 focus:ring-primary-blue" />
+                                <button type="button" onClick={addNewSubCategory} className="text-xs px-2 py-1 bg-primary-blue text-white rounded hover:opacity-90">Add</button>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -960,7 +1079,7 @@ const UpdateProduct = () => {
                     </div>
 
                     <h2 className="font-medium">Brand Details</h2>
-                    <div className="flex justify-between gap-4 items-start">
+                    <div className="flex gap-4 items-start">
                         <TextField
                             label="Brand"
                             type="text"
@@ -970,21 +1089,6 @@ const UpdateProduct = () => {
                             value={brand}
                             onChange={(e) => setBrand(e.target.value)}
                         />
-                        <div className="w-24 h-10 flex items-center justify-center border rounded-lg">
-                            {!logoPreview ? <ImageIcon /> :
-                                <img draggable="false" src={logoPreview} alt="Brand Logo" className="w-full h-full object-contain" />
-                            }
-                        </div>
-                        <label className="rounded font-medium bg-primary-grey text-center cursor-pointer text-white py-2 px-2.5 shadow hover:shadow-lg hover:opacity-90">
-                            <input
-                                type="file"
-                                name="logo"
-                                accept="image/*"
-                                onChange={handleLogoChange}
-                                className="hidden"
-                            />
-                            Choose Logo
-                        </label>
                     </div>
 
                 </div>

@@ -1,6 +1,6 @@
 import axios from "axios"
 import { ADD_TO_CART, EMPTY_CART, REMOVE_FROM_CART, SAVE_SHIPPING_ESTIMATE, SAVE_SHIPPING_INFO } from "../constants/cartConstants";
-import { getActiveUserId, saveCartItemsToStorage, saveShippingInfoToStorage } from "../utils/cartStorage";
+import { getActiveUserId, saveCartItemsToStorage, saveShippingEstimateToStorage, saveShippingInfoToStorage } from "../utils/cartStorage";
 
 const normalizeHex = (value) => {
     const raw = String(value || '').trim();
@@ -116,6 +116,7 @@ export const saveShippingInfo = (data) => async (dispatch, getState) => {
         try {
             const { data: estimate } = await axios.get(`/api/v1/shipping/estimate?pincode=${data.pincode}`);
             dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: estimate || undefined });
+            saveShippingEstimateToStorage(ownerId, data.pincode, estimate || undefined);
         } catch {
             dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: undefined });
         }

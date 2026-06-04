@@ -392,7 +392,7 @@ const uploadToCloudinaryOrFallback = async ({ data, folder, fallbackPrefix }) =>
             );
         }
 
-        throw new ErrorHandler(`Cloudinary upload failed: ${String(e?.message || e)}`, 502);
+        throw new ErrorHandler(`Cloudinary upload failed: ${String(e?.message || e?.error?.message || e?.http_code || JSON.stringify(e))}`, 502);
     }
 };
 
@@ -1514,11 +1514,13 @@ exports.createProduct = asyncErrorHandler(async (req, res, next) => {
         imagesLink.push(uploaded);
     }
 
-    const brandLogo = await uploadToCloudinaryOrFallback({
-        data: req.body.logo,
-        folder: 'brands',
-        fallbackPrefix: 'local-brand',
-    });
+    const brandLogo = req.body.logo
+        ? await uploadToCloudinaryOrFallback({
+            data: req.body.logo,
+            folder: 'brands',
+            fallbackPrefix: 'local-brand',
+          })
+        : { public_id: '', url: '' };
 
     req.body.brand = {
         name: req.body.brandname,
@@ -1658,6 +1660,15 @@ exports.updateProduct = asyncErrorHandler(async (req, res, next) => {
         specs = [typeof req.body.specifications === 'string' ? JSON.parse(req.body.specifications) : req.body.specifications];
     }
     req.body.specifications = specs;
+
+    // Parse categories / subCategories when they arrive as a JSON string from FormData
+    if (typeof req.body.categories === 'string') {
+        try { req.body.categories = JSON.parse(req.body.categories); } catch (e) { req.body.categories = []; }
+    }
+    if (typeof req.body.subCategories === 'string') {
+        try { req.body.subCategories = JSON.parse(req.body.subCategories); } catch (e) { req.body.subCategories = []; }
+    }
+
     req.body.user = req.user.id;
 
     // Catalogue highlight tags (optional) - only overwrite if client sent them

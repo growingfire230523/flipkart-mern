@@ -33,6 +33,7 @@ import BannersConfig from './components/Admin/BannersConfig';
 import AdsConfig from './components/Admin/AdsConfig';
 import MailList from './components/Admin/MailList';
 import OrderTable from './components/Admin/OrderTable';
+import SalesTable from './components/Admin/SalesTable';
 import UpdateOrder from './components/Admin/UpdateOrder';
 import ProductTable from './components/Admin/ProductTable';
 import NewProduct from './components/Admin/NewProduct';
@@ -278,9 +279,17 @@ function App() {
               </ProtectedRoute>
             } ></Route>
 
-            <Route path="/admin/products" element={
+            <Route path="/admin/sales" element={
               <ProtectedRoute isAdmin={true}>
                 <Dashboard activeTab={5}>
+                  <SalesTable />
+                </Dashboard>
+              </ProtectedRoute>
+            } ></Route>
+
+            <Route path="/admin/products" element={
+              <ProtectedRoute isAdmin={true}>
+                <Dashboard activeTab={6}>
                   <ProductTable />
                 </Dashboard>
               </ProtectedRoute>
@@ -288,7 +297,7 @@ function App() {
 
             <Route path="/admin/new_product" element={
               <ProtectedRoute isAdmin={true}>
-                <Dashboard activeTab={6}>
+                <Dashboard activeTab={7}>
                   <NewProduct />
                 </Dashboard>
               </ProtectedRoute>
@@ -296,7 +305,7 @@ function App() {
 
             <Route path="/admin/product/:id" element={
               <ProtectedRoute isAdmin={true}>
-                <Dashboard activeTab={5}>
+                <Dashboard activeTab={6}>
                   <UpdateProduct />
                 </Dashboard>
               </ProtectedRoute>
@@ -304,7 +313,7 @@ function App() {
 
             <Route path="/admin/users" element={
               <ProtectedRoute isAdmin={true}>
-                <Dashboard activeTab={7}>
+                <Dashboard activeTab={8}>
                   <UserTable />
                 </Dashboard>
               </ProtectedRoute>
@@ -312,7 +321,7 @@ function App() {
 
             <Route path="/admin/user/:id" element={
               <ProtectedRoute isAdmin={true}>
-                <Dashboard activeTab={7}>
+                <Dashboard activeTab={8}>
                   <UpdateUser />
                 </Dashboard>
               </ProtectedRoute>
@@ -320,7 +329,7 @@ function App() {
 
             <Route path="/admin/mail-list" element={
               <ProtectedRoute isAdmin={true}>
-                <Dashboard activeTab={8}>
+                <Dashboard activeTab={9}>
                   <MailList />
                 </Dashboard>
               </ProtectedRoute>
@@ -328,7 +337,7 @@ function App() {
 
             <Route path="/admin/reviews" element={
               <ProtectedRoute isAdmin={true}>
-                <Dashboard activeTab={9}>
+                <Dashboard activeTab={10}>
                   <ReviewsTable />
                 </Dashboard>
               </ProtectedRoute>

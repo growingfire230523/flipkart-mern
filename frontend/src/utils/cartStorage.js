@@ -142,6 +142,30 @@ export const saveShippingInfoToStorage = (userId, shippingInfo) => {
     }
 };
 
+export const shippingEstimateStorageKey = (userId) => `shippingEstimate:${userId || "guest"}`;
+
+export const saveShippingEstimateToStorage = (userId, pincode, estimate) => {
+    try {
+        if (!pincode) return;
+        localStorage.setItem(shippingEstimateStorageKey(userId), JSON.stringify({ pincode: String(pincode), estimate }));
+    } catch {
+        // ignore storage errors
+    }
+};
+
+export const loadShippingEstimateForPincode = (userId, pincode) => {
+    try {
+        if (!pincode) return undefined;
+        const raw = localStorage.getItem(shippingEstimateStorageKey(userId));
+        if (!raw) return undefined;
+        const stored = JSON.parse(raw);
+        if (stored?.pincode !== String(pincode)) return undefined;
+        return stored.estimate || undefined;
+    } catch {
+        return undefined;
+    }
+};
+
 export const loadWishlistItemsFromStorageOrLegacy = (userId) => {
     try {
         const scopedValue = localStorage.getItem(wishlistItemsStorageKey(userId));

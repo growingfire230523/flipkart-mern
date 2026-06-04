@@ -342,7 +342,7 @@ exports.myOrders = asyncErrorHandler(async (req, res, next) => {
 // Get All Orders ---ADMIN
 exports.getAllOrders = asyncErrorHandler(async (req, res, next) => {
 
-    const orders = await Order.find();
+    const orders = await Order.find().populate('user', 'name email');
 
     if (!orders) {
         return next(new ErrorHandler("Order Not Found", 404));

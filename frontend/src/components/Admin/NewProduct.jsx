@@ -48,8 +48,21 @@ const NewProduct = () => {
     const [itemCode, setItemCode] = useState("");
     const [description, setDescription] = useState("");
     const [descAiLoading, setDescAiLoading] = useState(false);
-    const [price, setPrice] = useState(0);
-    const [cuttedPrice, setCuttedPrice] = useState(0);
+    const [salePrice, setSalePrice] = useState(0);
+    const [saleTax, setSaleTax] = useState("without_tax");
+    const [saleDiscount, setSaleDiscount] = useState(0);
+    const [saleDiscountType, setSaleDiscountType] = useState("percentage");
+    const [wholesalePrice, setWholesalePrice] = useState(0);
+    const [wholesaleTax, setWholesaleTax] = useState("without_tax");
+    const [minWholesaleQty, setMinWholesaleQty] = useState(1);
+    const [purchasePrice, setPurchasePrice] = useState(0);
+    const [purchaseTax, setPurchaseTax] = useState("without_tax");
+    const [taxSlab, setTaxSlab] = useState("none");
+    const [openingQty, setOpeningQty] = useState(0);
+    const [openingAtPrice, setOpeningAtPrice] = useState(0);
+    const [openingAsOfDate, setOpeningAsOfDate] = useState("");
+    const [minStockToMaintain, setMinStockToMaintain] = useState(0);
+    const [stockLocation, setStockLocation] = useState("");
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [selectedSubCategories, setSelectedSubCategories] = useState([]);
     const [sessionExtraCategories, setSessionExtraCategories] = useState([]);
@@ -292,8 +305,7 @@ const NewProduct = () => {
         const first = volumeVariants.find((v) => String(v?.volume || "").trim() && Number(v?.price) > 0);
         if (!first) return;
 
-        setPrice(Number(first.price) || 0);
-        setCuttedPrice(Number(first.cuttedPrice) || Number(first.price) || 0);
+        setSalePrice(Number(first.price) || 0);
 
         const totalStock = volumeVariants.reduce((sum, v) => sum + (Number(v?.stock) || 0), 0);
         setStock(totalStock);
@@ -306,8 +318,7 @@ const NewProduct = () => {
         const first = sizeVariants.find((v) => String(v?.size || "").trim() && Number(v?.price) > 0);
         if (!first) return;
 
-        setPrice(Number(first.price) || 0);
-        setCuttedPrice(Number(first.cuttedPrice) || Number(first.price) || 0);
+        setSalePrice(Number(first.price) || 0);
 
         const totalStock = sizeVariants.reduce((sum, v) => sum + (Number(v?.stock) || 0), 0);
         setStock(totalStock);
@@ -320,8 +331,7 @@ const NewProduct = () => {
         const first = colorVariants.find((v) => String(v?.name || "").trim() && normalizeHex(v?.hex) && Number(v?.price) > 0);
         if (!first) return;
 
-        setPrice(Number(first.price) || 0);
-        setCuttedPrice(Number(first.cuttedPrice) || Number(first.price) || 0);
+        setSalePrice(Number(first.price) || 0);
 
         const totalStock = colorVariants.reduce((sum, v) => sum + (Number(v?.stock) || 0), 0);
         setStock(totalStock);
@@ -385,14 +395,6 @@ const NewProduct = () => {
             enqueueSnackbar("Add Highlights", { variant: "warning" });
             return;
         }
-        if (!logo) {
-            enqueueSnackbar("Add Brand Logo", { variant: "warning" });
-            return;
-        }
-        if (specs.length <= 1) {
-            enqueueSnackbar("Add Minimum 2 Specifications", { variant: "warning" });
-            return;
-        }
         if (images.length <= 0) {
             enqueueSnackbar("Add Product Images", { variant: "warning" });
             return;
@@ -447,13 +449,34 @@ const NewProduct = () => {
             return;
         }
 
+        const salePriceNum = Number(salePrice) || 0;
+        const saleDiscountNum = Number(saleDiscount) || 0;
+        const computedPrice = saleDiscountType === 'percentage'
+            ? Math.round(salePriceNum * (1 - saleDiscountNum / 100))
+            : Math.max(0, salePriceNum - saleDiscountNum);
+        const computedCuttedPrice = salePriceNum;
+
         const payload = {
             name,
             hsn,
             itemCode,
             description,
-            price,
-            cuttedPrice,
+            price: computedPrice,
+            cuttedPrice: computedCuttedPrice,
+            saleTax,
+            saleDiscount: saleDiscountNum,
+            saleDiscountType,
+            wholesalePrice: Number(wholesalePrice) || 0,
+            wholesaleTax,
+            minWholesaleQty: Number(minWholesaleQty) || 1,
+            purchasePrice: Number(purchasePrice) || 0,
+            purchaseTax,
+            taxSlab,
+            openingQty: Number(openingQty) || 0,
+            openingAtPrice: Number(openingAtPrice) || 0,
+            openingAsOfDate: openingAsOfDate || null,
+            minStockToMaintain: Number(minStockToMaintain) || 0,
+            stockLocation,
             category: selectedCategories[0] || "",
             categories: selectedCategories,
             subCategory: selectedSubCategories[0] || "",
@@ -559,37 +582,212 @@ const NewProduct = () => {
                             inputProps={{ style: { resize: 'vertical', overflow: 'auto' } }}
                         />
                     </div>
-                    <div className="flex justify-between">
-                        <TextField
-                            label="Price"
-                            type="number"
-                            variant="outlined"
-                            size="small"
-                            InputProps={{
-                                inputProps: {
-                                    min: 0
-                                }
-                            }}
-                            required
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                            disabled={isVolumeProduct || isSizeProduct || isColorProduct}
-                        />
-                        <TextField
-                            label="Cutted Price"
-                            type="number"
-                            variant="outlined"
-                            size="small"
-                            InputProps={{
-                                inputProps: {
-                                    min: 0
-                                }
-                            }}
-                            required
-                            value={cuttedPrice}
-                            onChange={(e) => setCuttedPrice(e.target.value)}
-                            disabled={isVolumeProduct || isSizeProduct || isColorProduct}
-                        />
+                    {/* ── Sale Price ── */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Sale Price</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <TextField
+                                label="Sale Price"
+                                type="number"
+                                variant="outlined"
+                                size="small"
+                                required
+                                value={salePrice}
+                                onChange={(e) => setSalePrice(e.target.value)}
+                                disabled={isVolumeProduct || isSizeProduct || isColorProduct}
+                                InputProps={{ inputProps: { min: 0 } }}
+                                sx={{ flex: 2, minWidth: 100 }}
+                            />
+                            <select
+                                value={saleTax}
+                                onChange={(e) => setSaleTax(e.target.value)}
+                                className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white"
+                                style={{ flex: 1.5, minWidth: 110 }}
+                            >
+                                <option value="without_tax">Excl. Tax</option>
+                                <option value="with_tax">Incl. Tax</option>
+                            </select>
+                            <TextField
+                                label="Discount"
+                                type="number"
+                                variant="outlined"
+                                size="small"
+                                value={saleDiscount}
+                                onChange={(e) => setSaleDiscount(e.target.value)}
+                                disabled={isVolumeProduct || isSizeProduct || isColorProduct}
+                                InputProps={{ inputProps: { min: 0 } }}
+                                sx={{ flex: 1.5, minWidth: 80 }}
+                            />
+                            <select
+                                value={saleDiscountType}
+                                onChange={(e) => setSaleDiscountType(e.target.value)}
+                                className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white"
+                                style={{ flex: 1, minWidth: 70 }}
+                            >
+                                <option value="percentage">%</option>
+                                <option value="amount">₹</option>
+                            </select>
+                        </div>
+                        {Number(salePrice) > 0 && (
+                            <p className="text-xs text-gray-500 mt-1">
+                                Selling price:{' '}
+                                <span className="font-semibold text-green-700">
+                                    ₹{saleDiscountType === 'percentage'
+                                        ? Math.round(Number(salePrice) * (1 - Number(saleDiscount) / 100))
+                                        : Math.max(0, Number(salePrice) - Number(saleDiscount))}
+                                </span>
+                                {' '}(MRP ₹{Number(salePrice)} crossed out)
+                            </p>
+                        )}
+                    </div>
+
+                    {/* ── Wholesale Price ── */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Wholesale Price</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <TextField
+                                label="Wholesale Price"
+                                type="number"
+                                variant="outlined"
+                                size="small"
+                                value={wholesalePrice}
+                                onChange={(e) => setWholesalePrice(e.target.value)}
+                                InputProps={{ inputProps: { min: 0 } }}
+                                sx={{ flex: 2, minWidth: 120 }}
+                            />
+                            <select
+                                value={wholesaleTax}
+                                onChange={(e) => setWholesaleTax(e.target.value)}
+                                className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white"
+                                style={{ flex: 1.5, minWidth: 110 }}
+                            >
+                                <option value="without_tax">Excl. Tax</option>
+                                <option value="with_tax">Incl. Tax</option>
+                            </select>
+                            <TextField
+                                label="Min. Wholesale Qty"
+                                type="number"
+                                variant="outlined"
+                                size="small"
+                                value={minWholesaleQty}
+                                onChange={(e) => setMinWholesaleQty(e.target.value)}
+                                InputProps={{ inputProps: { min: 1 } }}
+                                sx={{ flex: 2, minWidth: 120 }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* ── Purchase Price ── */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Purchase Price</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <TextField
+                                label="Purchase Price"
+                                type="number"
+                                variant="outlined"
+                                size="small"
+                                value={purchasePrice}
+                                onChange={(e) => setPurchasePrice(e.target.value)}
+                                InputProps={{ inputProps: { min: 0 } }}
+                                sx={{ flex: 2, minWidth: 120 }}
+                            />
+                            <select
+                                value={purchaseTax}
+                                onChange={(e) => setPurchaseTax(e.target.value)}
+                                className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white"
+                                style={{ flex: 1.5, minWidth: 110 }}
+                            >
+                                <option value="without_tax">Excl. Tax</option>
+                                <option value="with_tax">Incl. Tax</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* ── Taxes ── */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Taxes</p>
+                        <select
+                            value={taxSlab}
+                            onChange={(e) => setTaxSlab(e.target.value)}
+                            className="border border-gray-300 rounded px-2 h-10 text-sm text-gray-700 bg-white w-full"
+                        >
+                            <option value="none">None</option>
+                            <option value="igst_0">IGST@0%</option>
+                            <option value="gst_0">GST@0%</option>
+                            <option value="igst_0.25">IGST@0.25%</option>
+                            <option value="gst_0.25">GST@0.25%</option>
+                            <option value="igst_3">IGST@3%</option>
+                            <option value="gst_3">GST@3%</option>
+                            <option value="igst_5">IGST@5%</option>
+                            <option value="gst_5">GST@5%</option>
+                            <option value="igst_12">IGST@12%</option>
+                            <option value="gst_12">GST@12%</option>
+                            <option value="igst_18">IGST@18%</option>
+                            <option value="gst_18">GST@18%</option>
+                            <option value="igst_28">IGST@28%</option>
+                            <option value="gst_28">GST@28%</option>
+                            <option value="igst_40">IGST@40%</option>
+                            <option value="gst_40">GST@40%</option>
+                            <option value="exempt">Exempt</option>
+                        </select>
+                    </div>
+
+                    {/* ── Stock ── */}
+                    <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Stock</p>
+                        <div className="flex gap-2 flex-wrap">
+                            <TextField
+                                label="Opening Quantity"
+                                type="number"
+                                variant="outlined"
+                                size="small"
+                                value={openingQty}
+                                onChange={(e) => setOpeningQty(e.target.value)}
+                                InputProps={{ inputProps: { min: 0 } }}
+                                sx={{ flex: 2, minWidth: 120 }}
+                            />
+                            <TextField
+                                label="At Price"
+                                type="number"
+                                variant="outlined"
+                                size="small"
+                                value={openingAtPrice}
+                                onChange={(e) => setOpeningAtPrice(e.target.value)}
+                                InputProps={{ inputProps: { min: 0 } }}
+                                sx={{ flex: 2, minWidth: 100 }}
+                            />
+                            <TextField
+                                label="As of Date"
+                                type="date"
+                                variant="outlined"
+                                size="small"
+                                value={openingAsOfDate}
+                                onChange={(e) => setOpeningAsOfDate(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ flex: 2, minWidth: 140 }}
+                            />
+                        </div>
+                        <div className="flex gap-2 flex-wrap mt-2">
+                            <TextField
+                                label="Min. Stock to Maintain"
+                                type="number"
+                                variant="outlined"
+                                size="small"
+                                value={minStockToMaintain}
+                                onChange={(e) => setMinStockToMaintain(e.target.value)}
+                                InputProps={{ inputProps: { min: 0 } }}
+                                sx={{ flex: 2, minWidth: 160 }}
+                            />
+                            <TextField
+                                label="Location"
+                                variant="outlined"
+                                size="small"
+                                value={stockLocation}
+                                onChange={(e) => setStockLocation(e.target.value)}
+                                placeholder="e.g. Warehouse A"
+                                sx={{ flex: 3, minWidth: 160 }}
+                            />
+                        </div>
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -856,7 +1054,7 @@ const NewProduct = () => {
                             Show gifting ribbon
                         </label>
                     </div>
-                    <div className="flex justify-between gap-4">
+                    <div className="flex gap-4">
                         {/* ── Category multiselect panel ── */}
                         <div className="flex-1 flex flex-col gap-1 border rounded p-2">
                             <div className="flex items-center justify-between mb-1">
@@ -970,35 +1168,6 @@ const NewProduct = () => {
                                 </button>
                             </div>
                         </div>
-                        <TextField
-                            label="Stock"
-                            type="number"
-                            variant="outlined"
-                            size="small"
-                            InputProps={{
-                                inputProps: {
-                                    min: 0
-                                }
-                            }}
-                            required
-                            value={stock}
-                            onChange={(e) => setStock(e.target.value)}
-                            disabled={isVolumeProduct}
-                        />
-                        <TextField
-                            label="Warranty"
-                            type="number"
-                            variant="outlined"
-                            size="small"
-                            InputProps={{
-                                inputProps: {
-                                    min: 0
-                                }
-                            }}
-                            required
-                            value={warranty}
-                            onChange={(e) => setWarranty(e.target.value)}
-                        />
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -1071,7 +1240,7 @@ const NewProduct = () => {
                     </div>
 
                     <h2 className="font-medium">Brand Details</h2>
-                    <div className="flex justify-between gap-4 items-start">
+                    <div className="flex gap-4 items-start">
                         <TextField
                             label="Brand"
                             type="text"
@@ -1081,21 +1250,6 @@ const NewProduct = () => {
                             value={brand}
                             onChange={(e) => setBrand(e.target.value)}
                         />
-                        <div className="w-24 h-10 flex items-center justify-center border rounded-lg">
-                            {!logoPreview ? <ImageIcon /> :
-                                <img draggable="false" src={logoPreview} alt="Brand Logo" className="w-full h-full object-contain" />
-                            }
-                        </div>
-                        <label className="rounded bg-primary-grey text-center cursor-pointer text-white py-2 px-2.5 shadow hover:shadow-lg hover:opacity-90">
-                            <input
-                                type="file"
-                                name="logo"
-                                accept="image/*"
-                                onChange={handleLogoChange}
-                                className="hidden"
-                            />
-                            Choose Logo
-                        </label>
                     </div>
 
                 </div>

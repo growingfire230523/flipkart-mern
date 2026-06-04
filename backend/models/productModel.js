@@ -204,14 +204,8 @@ const productSchema = new mongoose.Schema({
             required: true
         },
         logo: {
-            public_id: {
-                type: String,
-                required: true,
-            },
-            url: {
-                type: String,
-                required: true,
-            }
+            public_id: { type: String, default: '' },
+            url: { type: String, default: '' },
         }
     },
     category: {
@@ -236,6 +230,66 @@ const productSchema = new mongoose.Schema({
         default: '',
     },
     itemCode: {
+        type: String,
+        default: '',
+    },
+    saleTax: {
+        type: String,
+        enum: ['with_tax', 'without_tax'],
+        default: 'without_tax',
+    },
+    saleDiscount: {
+        type: Number,
+        default: 0,
+    },
+    saleDiscountType: {
+        type: String,
+        enum: ['percentage', 'amount'],
+        default: 'percentage',
+    },
+    wholesalePrice: {
+        type: Number,
+        default: 0,
+    },
+    wholesaleTax: {
+        type: String,
+        enum: ['with_tax', 'without_tax'],
+        default: 'without_tax',
+    },
+    minWholesaleQty: {
+        type: Number,
+        default: 1,
+    },
+    purchasePrice: {
+        type: Number,
+        default: 0,
+    },
+    purchaseTax: {
+        type: String,
+        enum: ['with_tax', 'without_tax'],
+        default: 'without_tax',
+    },
+    taxSlab: {
+        type: String,
+        default: 'none',
+    },
+    openingQty: {
+        type: Number,
+        default: 0,
+    },
+    openingAtPrice: {
+        type: Number,
+        default: 0,
+    },
+    openingAsOfDate: {
+        type: Date,
+        default: null,
+    },
+    minStockToMaintain: {
+        type: Number,
+        default: 0,
+    },
+    stockLocation: {
         type: String,
         default: '',
     },

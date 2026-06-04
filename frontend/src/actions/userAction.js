@@ -37,12 +37,13 @@ import {
     ALL_USERS_REQUEST,
 } from '../constants/userConstants';
 import axios from 'axios';
-import { EMPTY_CART, SAVE_SHIPPING_INFO, SET_CART_ITEMS } from '../constants/cartConstants';
+import { EMPTY_CART, SAVE_SHIPPING_ESTIMATE, SAVE_SHIPPING_INFO, SET_CART_ITEMS } from '../constants/cartConstants';
 import { SET_WISHLIST_ITEMS } from '../constants/wishlistConstants';
 import { SET_SAVE_FOR_LATER_ITEMS } from '../constants/saveForLaterConstants';
 import { SET_COMPARE_ITEMS } from '../constants/compareConstants';
 import {
     loadCartItemsFromStorageOrLegacy,
+    loadShippingEstimateForPincode,
     loadShippingInfoFromStorageOrLegacy,
     loadWishlistItemsFromStorageOrLegacy,
     loadSaveForLaterItemsFromStorageOrLegacy,
@@ -86,7 +87,9 @@ export const loginUser = (email, password) => async (dispatch) => {
         });
 
         dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
-        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        const _loginSI = loadShippingInfoFromStorageOrLegacy(userId);
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: _loginSI });
+        dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: loadShippingEstimateForPincode(userId, _loginSI?.pincode) });
         dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
@@ -130,7 +133,9 @@ export const registerUser = (userData) => async (dispatch) => {
         });
 
         dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
-        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        const _registerSI = loadShippingInfoFromStorageOrLegacy(userId);
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: _registerSI });
+        dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: loadShippingEstimateForPincode(userId, _registerSI?.pincode) });
         dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
@@ -164,7 +169,9 @@ export const loadUser = () => async (dispatch) => {
         });
 
         dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
-        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        const _loadSI = loadShippingInfoFromStorageOrLegacy(userId);
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: _loadSI });
+        dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: loadShippingEstimateForPincode(userId, _loadSI?.pincode) });
         dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
@@ -189,7 +196,9 @@ export const logoutUser = () => async (dispatch) => {
 
         // Switch to guest cart if any exists in storage.
         dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(null) });
-        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(null) });
+        const _logoutSI = loadShippingInfoFromStorageOrLegacy(null);
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: _logoutSI });
+        dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: loadShippingEstimateForPincode(null, _logoutSI?.pincode) });
         dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(null) });
         dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(null) });
         dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(null) });
@@ -432,7 +441,9 @@ export const loginWithGoogle = (credential) => async (dispatch) => {
         });
 
         dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
-        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        const _googleSI = loadShippingInfoFromStorageOrLegacy(userId);
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: _googleSI });
+        dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: loadShippingEstimateForPincode(userId, _googleSI?.pincode) });
         dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
@@ -474,7 +485,9 @@ export const loginWithPhoneOtp = (phone, otp) => async (dispatch) => {
         });
 
         dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
-        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        const _phoneLoginSI = loadShippingInfoFromStorageOrLegacy(userId);
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: _phoneLoginSI });
+        dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: loadShippingEstimateForPincode(userId, _phoneLoginSI?.pincode) });
         dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });
@@ -512,7 +525,9 @@ export const verifyPhoneRegisterOtp = (registrationToken, otp) => async (dispatc
         dispatch({ type: REGISTER_USER_SUCCESS, payload: data.user });
 
         dispatch({ type: SET_CART_ITEMS, payload: loadCartItemsFromStorageOrLegacy(userId) });
-        dispatch({ type: SAVE_SHIPPING_INFO, payload: loadShippingInfoFromStorageOrLegacy(userId) });
+        const _phoneRegSI = loadShippingInfoFromStorageOrLegacy(userId);
+        dispatch({ type: SAVE_SHIPPING_INFO, payload: _phoneRegSI });
+        dispatch({ type: SAVE_SHIPPING_ESTIMATE, payload: loadShippingEstimateForPincode(userId, _phoneRegSI?.pincode) });
         dispatch({ type: SET_WISHLIST_ITEMS, payload: loadWishlistItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_SAVE_FOR_LATER_ITEMS, payload: loadSaveForLaterItemsFromStorageOrLegacy(userId) });
         dispatch({ type: SET_COMPARE_ITEMS, payload: loadCompareItemsFromStorage(userId) });

@@ -45,6 +45,11 @@ const navMenu = [
         ref: "/admin/orders",
     },
     {
+        icon: <EqualizerIcon />,
+        label: "Sales",
+        ref: "/admin/sales",
+    },
+    {
         icon: <InventoryIcon />,
         label: "Products",
         ref: "/admin/products",
