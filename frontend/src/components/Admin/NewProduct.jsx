@@ -1,10 +1,10 @@
 import TextField from '@mui/material/TextField';
 import { useState, useEffect } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import MenuItem from '@mui/material/MenuItem';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { NEW_PRODUCT_RESET } from '../../constants/productConstants';
 import { createProduct, clearErrors } from '../../actions/productAction';
 import ImageIcon from '@mui/icons-material/Image';
@@ -44,11 +44,20 @@ const NewProduct = () => {
     });
 
     const [name, setName] = useState("");
+    const [hsn, setHsn] = useState("");
+    const [itemCode, setItemCode] = useState("");
     const [description, setDescription] = useState("");
+    const [descAiLoading, setDescAiLoading] = useState(false);
     const [price, setPrice] = useState(0);
     const [cuttedPrice, setCuttedPrice] = useState(0);
-    const [category, setCategory] = useState("");
-    const [subCategory, setSubCategory] = useState("");
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [selectedSubCategories, setSelectedSubCategories] = useState([]);
+    const [sessionExtraCategories, setSessionExtraCategories] = useState([]);
+    const [sessionExtraSubCategories, setSessionExtraSubCategories] = useState([]);
+    const [newCategoryInput, setNewCategoryInput] = useState("");
+    const [newSubCategoryInput, setNewSubCategoryInput] = useState("");
+    const [categorySearch, setCategorySearch] = useState("");
+    const [subCategorySearch, setSubCategorySearch] = useState("");
     const [stock, setStock] = useState(0);
     const [warranty, setWarranty] = useState(0);
     const [brand, setBrand] = useState("");
@@ -84,9 +93,46 @@ const NewProduct = () => {
         setSpecsInput({ ...specsInput, [e.target.name]: e.target.value });
     }
 
-    useEffect(() => {
-        setSubCategory("");
-    }, [category]);
+    // All categories available in this session (hardcoded + admin-added)
+    const allCategories = [...categories, ...sessionExtraCategories];
+
+    // All subcategories available for selected categories + session-added
+    const allSubCategories = Array.from(new Set([
+        ...selectedCategories.flatMap((cat) => subCategoriesByCategory[cat] || []),
+        ...sessionExtraSubCategories,
+    ]));
+
+    const toggleCategory = (cat) => {
+        setSelectedCategories((prev) =>
+            prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+        );
+    };
+
+    const toggleSubCategory = (sub) => {
+        setSelectedSubCategories((prev) =>
+            prev.includes(sub) ? prev.filter((s) => s !== sub) : [...prev, sub]
+        );
+    };
+
+    const addNewCategory = () => {
+        const v = newCategoryInput.trim().toUpperCase();
+        if (!v) return;
+        if (!allCategories.includes(v)) {
+            setSessionExtraCategories((prev) => [...prev, v]);
+        }
+        setSelectedCategories((prev) => prev.includes(v) ? prev : [...prev, v]);
+        setNewCategoryInput("");
+    };
+
+    const addNewSubCategory = () => {
+        const v = newSubCategoryInput.trim();
+        if (!v) return;
+        if (!allSubCategories.includes(v)) {
+            setSessionExtraSubCategories((prev) => [...prev, v]);
+        }
+        setSelectedSubCategories((prev) => prev.includes(v) ? prev : [...prev, v]);
+        setNewSubCategoryInput("");
+    };
 
     const addSpecs = () => {
         if (!specsInput.title.trim() || !specsInput.title.trim()) return;
@@ -302,10 +348,35 @@ const NewProduct = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSizeProduct]);
 
+    const generateItemCode = () => {
+        const code = Array.from({ length: 13 }, () => Math.floor(Math.random() * 10)).join('');
+        setItemCode(code);
+    };
+
+    const generateDescription = async () => {
+        if (!name.trim()) {
+            enqueueSnackbar('Enter Item Name first', { variant: 'warning' });
+            return;
+        }
+        setDescAiLoading(true);
+        try {
+            const { data } = await axios.post('/api/v1/admin/product/generate-description', { name }, { withCredentials: true });
+            setDescription(data.description);
+        } catch (err) {
+            enqueueSnackbar(err?.response?.data?.message || 'AI generation failed', { variant: 'error' });
+        } finally {
+            setDescAiLoading(false);
+        }
+    };
+
     const newProductSubmitHandler = (e) => {
         e.preventDefault();
-        if (!subCategory) {
-            enqueueSnackbar("Select Sub Category", { variant: "warning" });
+        if (selectedCategories.length === 0) {
+            enqueueSnackbar("Select at least one Category", { variant: "warning" });
+            return;
+        }
+        if (selectedSubCategories.length === 0) {
+            enqueueSnackbar("Select at least one Sub Category", { variant: "warning" });
             return;
         }
 
@@ -378,11 +449,15 @@ const NewProduct = () => {
 
         const payload = {
             name,
+            hsn,
+            itemCode,
             description,
             price,
             cuttedPrice,
-            category,
-            subCategory,
+            category: selectedCategories[0] || "",
+            categories: selectedCategories,
+            subCategory: selectedSubCategories[0] || "",
+            subCategories: selectedSubCategories,
             stock,
             warranty,
             brandname: brand,
@@ -424,24 +499,66 @@ const NewProduct = () => {
             <form onSubmit={newProductSubmitHandler} encType="multipart/form-data" className="flex flex-col sm:flex-row bg-white rounded-lg shadow p-4" id="mainform">
 
                 <div className="flex flex-col gap-3 m-2 sm:w-1/2">
-                    <TextField
-                        label="Name"
-                        variant="outlined"
-                        size="small"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    <TextField
-                        label="Description"
-                        multiline
-                        rows={3}
-                        required
-                        variant="outlined"
-                        size="small"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    />
+                    <div className="flex gap-3">
+                        <TextField
+                            label="Item Name"
+                            variant="outlined"
+                            size="small"
+                            required
+                            fullWidth
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
+                        <TextField
+                            label="Item HSN"
+                            variant="outlined"
+                            size="small"
+                            value={hsn}
+                            onChange={(e) => setHsn(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex gap-3 items-center">
+                        <TextField
+                            label="Item Code"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={itemCode}
+                            onChange={(e) => setItemCode(e.target.value)}
+                            placeholder="13-digit code"
+                        />
+                        <button
+                            type="button"
+                            onClick={generateItemCode}
+                            className="px-3 py-2 text-xs bg-gray-600 text-white rounded hover:opacity-90 whitespace-nowrap"
+                        >
+                            Generate Code
+                        </button>
+                    </div>
+                    <div className="flex flex-col">
+                        <div className="flex justify-end mb-1">
+                            <button
+                                type="button"
+                                onClick={generateDescription}
+                                disabled={descAiLoading || !name.trim()}
+                                className="px-2.5 py-0.5 text-xs bg-gradient-to-r from-violet-500 to-indigo-500 text-white rounded font-semibold hover:opacity-90 disabled:opacity-50"
+                            >
+                                {descAiLoading ? 'Generating...' : '✨ AI'}
+                            </button>
+                        </div>
+                        <TextField
+                            label="Description"
+                            multiline
+                            minRows={3}
+                            required
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            inputProps={{ style: { resize: 'vertical', overflow: 'auto' } }}
+                        />
+                    </div>
                     <div className="flex justify-between">
                         <TextField
                             label="Price"
@@ -740,39 +857,119 @@ const NewProduct = () => {
                         </label>
                     </div>
                     <div className="flex justify-between gap-4">
-                        <TextField
-                            label="Category"
-                            select
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            required
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                        >
-                            {categories.map((el, i) => (
-                                <MenuItem value={el} key={i}>
-                                    {el}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                        <TextField
-                            label="Sub Category"
-                            select
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            required
-                            disabled={!category}
-                            value={subCategory}
-                            onChange={(e) => setSubCategory(e.target.value)}
-                        >
-                            {(Array.from(new Set(subCategoriesByCategory?.[category] ?? []))).map((el, i) => (
-                                <MenuItem value={el} key={i}>
-                                    {el}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+                        {/* ── Category multiselect panel ── */}
+                        <div className="flex-1 flex flex-col gap-1 border rounded p-2">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Category *</span>
+                                {selectedCategories.length > 0 && (
+                                    <span className="text-[10px] text-primary-blue font-medium">{selectedCategories.length} selected</span>
+                                )}
+                            </div>
+                            {/* Search */}
+                            <input
+                                type="text"
+                                placeholder="Search categories..."
+                                value={categorySearch}
+                                onChange={(e) => setCategorySearch(e.target.value)}
+                                className="text-xs border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-primary-blue mb-1"
+                            />
+                            {/* List */}
+                            <div className="max-h-44 overflow-y-auto flex flex-col gap-0.5">
+                                {allCategories
+                                    .filter((c) => c.toLowerCase().includes(categorySearch.toLowerCase()))
+                                    .map((cat) => (
+                                        <label key={cat} className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer text-xs hover:bg-gray-50 ${selectedCategories.includes(cat) ? 'bg-primary-blue/10 font-semibold text-primary-blue' : 'text-gray-700'}`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedCategories.includes(cat)}
+                                                onChange={() => toggleCategory(cat)}
+                                                className="accent-primary-blue"
+                                            />
+                                            {cat}
+                                        </label>
+                                    ))}
+                                {allCategories.filter((c) => c.toLowerCase().includes(categorySearch.toLowerCase())).length === 0 && (
+                                    <p className="text-xs text-gray-400 px-2 py-1">No match. Add below.</p>
+                                )}
+                            </div>
+                            {/* Add new */}
+                            <div className="flex items-center gap-1 mt-1 border-t pt-1">
+                                <input
+                                    type="text"
+                                    placeholder="Add new category…"
+                                    value={newCategoryInput}
+                                    onChange={(e) => setNewCategoryInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addNewCategory())}
+                                    className="text-xs border rounded px-2 py-1 flex-1 outline-none focus:ring-1 focus:ring-primary-blue"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={addNewCategory}
+                                    className="text-xs px-2 py-1 bg-primary-blue text-white rounded hover:opacity-90 whitespace-nowrap"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* ── Sub Category multiselect panel ── */}
+                        <div className="flex-1 flex flex-col gap-1 border rounded p-2">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sub Category *</span>
+                                {selectedSubCategories.length > 0 && (
+                                    <span className="text-[10px] text-primary-blue font-medium">{selectedSubCategories.length} selected</span>
+                                )}
+                            </div>
+                            {/* Search */}
+                            <input
+                                type="text"
+                                placeholder="Search subcategories..."
+                                value={subCategorySearch}
+                                onChange={(e) => setSubCategorySearch(e.target.value)}
+                                className="text-xs border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-primary-blue mb-1"
+                            />
+                            {/* List */}
+                            <div className="max-h-44 overflow-y-auto flex flex-col gap-0.5">
+                                {selectedCategories.length === 0 && sessionExtraSubCategories.length === 0 ? (
+                                    <p className="text-xs text-gray-400 px-2 py-1">Select a category first, or add below.</p>
+                                ) : (
+                                    allSubCategories
+                                        .filter((s) => s.toLowerCase().includes(subCategorySearch.toLowerCase()))
+                                        .map((sub) => (
+                                            <label key={sub} className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer text-xs hover:bg-gray-50 ${selectedSubCategories.includes(sub) ? 'bg-primary-blue/10 font-semibold text-primary-blue' : 'text-gray-700'}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedSubCategories.includes(sub)}
+                                                    onChange={() => toggleSubCategory(sub)}
+                                                    className="accent-primary-blue"
+                                                />
+                                                {sub}
+                                            </label>
+                                        ))
+                                )}
+                                {selectedCategories.length > 0 && allSubCategories.filter((s) => s.toLowerCase().includes(subCategorySearch.toLowerCase())).length === 0 && (
+                                    <p className="text-xs text-gray-400 px-2 py-1">No match. Add below.</p>
+                                )}
+                            </div>
+                            {/* Add new */}
+                            <div className="flex items-center gap-1 mt-1 border-t pt-1">
+                                <input
+                                    type="text"
+                                    placeholder="Add new subcategory…"
+                                    value={newSubCategoryInput}
+                                    onChange={(e) => setNewSubCategoryInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addNewSubCategory())}
+                                    className="text-xs border rounded px-2 py-1 flex-1 outline-none focus:ring-1 focus:ring-primary-blue"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={addNewSubCategory}
+                                    className="text-xs px-2 py-1 bg-primary-blue text-white rounded hover:opacity-90 whitespace-nowrap"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
                         <TextField
                             label="Stock"
                             type="number"

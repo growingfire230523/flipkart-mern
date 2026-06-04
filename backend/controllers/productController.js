@@ -1888,3 +1888,73 @@ exports.getBestSellerProducts = asyncErrorHandler(async (req, res) => {
         products,
     });
 });
+
+// ── AI Description Generator ────────────────────────────────────────
+
+exports.generateProductDescription = asyncErrorHandler(async (req, res, next) => {
+    const productName = String(req.body.name || '').trim();
+    if (!productName) {
+        return next(new ErrorHandler('Product name is required', 400));
+    }
+
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+        return next(new ErrorHandler('OpenAI API key not configured', 500));
+    }
+
+    const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+    const prompt = `Write a captivating 70-word product description for a beauty/cosmetics product named "${productName}". Be vivid, sensory, and persuasive. Output only the description text, no headings or extra formatting.`;
+
+    const body = JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.8,
+        max_tokens: 150,
+    });
+
+    const shouldAllowInsecureTls = () => {
+        const flag = process.env.OPENAI_INSECURE_TLS;
+        return String(flag || '').trim().toLowerCase() === 'true' && process.env.NODE_ENV !== 'production';
+    };
+    const agent = shouldAllowInsecureTls() ? new https.Agent({ rejectUnauthorized: false }) : undefined;
+
+    const description = await new Promise((resolve, reject) => {
+        const reqHttp = https.request(
+            {
+                hostname: 'api.openai.com',
+                path: '/v1/chat/completions',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(body),
+                    Authorization: `Bearer ${apiKey}`,
+                },
+                ...(agent ? { agent } : {}),
+                timeout: 20000,
+            },
+            (resp) => {
+                let data = '';
+                resp.on('data', (chunk) => (data += chunk));
+                resp.on('end', () => {
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (resp.statusCode >= 400) {
+                            return reject(new Error(parsed?.error?.message || `OpenAI HTTP ${resp.statusCode}`));
+                        }
+                        const text = parsed?.choices?.[0]?.message?.content?.trim();
+                        if (!text) return reject(new Error('Empty response from OpenAI'));
+                        resolve(text);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            }
+        );
+        reqHttp.on('error', reject);
+        reqHttp.on('timeout', () => { reqHttp.destroy(); reject(new Error('OpenAI request timed out')); });
+        reqHttp.write(body);
+        reqHttp.end();
+    });
+
+    res.status(200).json({ success: true, description });
+});

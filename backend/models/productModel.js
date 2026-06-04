@@ -218,10 +218,26 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: [true, "Please enter product category"]
     },
+    categories: {
+        type: [String],
+        default: [],
+    },
     subCategory: {
         type: String,
         trim: true,
         default: ''
+    },
+    subCategories: {
+        type: [String],
+        default: [],
+    },
+    hsn: {
+        type: String,
+        default: '',
+    },
+    itemCode: {
+        type: String,
+        default: '',
     },
     stock: {
         type: Number,

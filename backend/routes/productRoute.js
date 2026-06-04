@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllProducts, getProductSuggestions, getProductDetails, updateProduct, deleteProduct, getProductReviews, deleteReview, createProductReview, createProduct, getAdminProducts, getProducts, getTopRatedProducts, getNewInProducts, getBestSellerProducts, getMakeMyKitProducts, getDealProducts, toggleDealOfDay, getDealConfig, updateDealConfig } = require('../controllers/productController');
+const { getAllProducts, getProductSuggestions, getProductDetails, updateProduct, deleteProduct, getProductReviews, deleteReview, createProductReview, createProduct, getAdminProducts, getProducts, getTopRatedProducts, getNewInProducts, getBestSellerProducts, getMakeMyKitProducts, getDealProducts, toggleDealOfDay, getDealConfig, updateDealConfig, generateProductDescription } = require('../controllers/productController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
 
 const router = express.Router();
@@ -16,6 +16,7 @@ router.route('/deals/config').get(getDealConfig);
 
 router.route('/admin/products').get(isAuthenticatedUser, authorizeRoles("admin"), getAdminProducts);
 router.route('/admin/product/new').post(isAuthenticatedUser, authorizeRoles("admin"), createProduct);
+router.route('/admin/product/generate-description').post(isAuthenticatedUser, authorizeRoles("admin"), generateProductDescription);
 
 router.route('/admin/product/:id')
     .put(isAuthenticatedUser, authorizeRoles("admin"), updateProduct)
