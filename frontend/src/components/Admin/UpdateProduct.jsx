@@ -464,9 +464,9 @@ const UpdateProduct = () => {
         formData.set("minStockToMaintain", Number(minStockToMaintain) || 0);
         formData.set("stockLocation", stockLocation);
         formData.set("category", selectedCategories[0] || "");
-        formData.set("categories", JSON.stringify(selectedCategories));
+        selectedCategories.forEach((c) => formData.append("categories", c));
         formData.set("subCategory", selectedSubCategories[0] || "");
-        formData.set("subCategories", JSON.stringify(selectedSubCategories));
+        selectedSubCategories.forEach((c) => formData.append("subCategories", c));
         formData.set("stock", stock);
         formData.set("warranty", warranty);
         formData.set("brandname", brand);
@@ -513,8 +513,16 @@ const UpdateProduct = () => {
             setOpeningAsOfDate(product.openingAsOfDate ? new Date(product.openingAsOfDate).toISOString().split('T')[0] : "");
             setMinStockToMaintain(product.minStockToMaintain || 0);
             setStockLocation(product.stockLocation || "");
-            setSelectedCategories(Array.isArray(product.categories) && product.categories.length > 0 ? product.categories : (product.category ? [product.category] : []));
-            setSelectedSubCategories(Array.isArray(product.subCategories) && product.subCategories.length > 0 ? product.subCategories : (product.subCategory ? [product.subCategory] : []));
+            const parseLegacyArray = (arr, fallback) => {
+                if (!Array.isArray(arr) || arr.length === 0) return fallback;
+                // Handle corrupted format where array contains a single JSON string e.g. ['["SKIN CARE"]']
+                if (arr.length === 1 && typeof arr[0] === 'string' && arr[0].trimStart().startsWith('[')) {
+                    try { return JSON.parse(arr[0]); } catch(e) {}
+                }
+                return arr;
+            };
+            setSelectedCategories(parseLegacyArray(product.categories, product.category ? [product.category] : []));
+            setSelectedSubCategories(parseLegacyArray(product.subCategories, product.subCategory ? [product.subCategory] : []));
             setStock(product.stock);
             setWarranty(product.warranty);
             setBrand(product.brand.name);
@@ -700,7 +708,7 @@ const UpdateProduct = () => {
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
+                    {false && <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm text-primary-darkBlue">
                             <input
                                 type="checkbox"
@@ -766,9 +774,9 @@ const UpdateProduct = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div>}
 
-                    <div className="flex flex-col gap-2">
+                    {false && <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm text-primary-darkBlue">
                             <input
                                 type="checkbox"
@@ -834,9 +842,9 @@ const UpdateProduct = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div>}
 
-                    <div className="flex flex-col gap-2">
+                    {false && <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm text-primary-darkBlue">
                             <input
                                 type="checkbox"
@@ -952,7 +960,7 @@ const UpdateProduct = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div>}
 
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm text-primary-darkBlue">
@@ -1029,8 +1037,8 @@ const UpdateProduct = () => {
                         </div>
                     </div>
 
-                    <h2 className="font-medium">Catalogue Highlight Tags</h2>
-                    <div className="flex flex-col gap-3">
+                    {false && <h2 className="font-medium">Catalogue Highlight Tags</h2>}
+                    {false && <div className="flex flex-col gap-3">
                         <div className="flex flex-col gap-2">
                             <div className="flex justify-between items-center border rounded">
                                 <input
@@ -1076,7 +1084,7 @@ const UpdateProduct = () => {
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    </div>}
 
                     <h2 className="font-medium">Brand Details</h2>
                     <div className="flex gap-4 items-start">

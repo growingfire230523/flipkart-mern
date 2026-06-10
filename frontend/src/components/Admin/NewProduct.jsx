@@ -790,7 +790,7 @@ const NewProduct = () => {
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
+                    {false && <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm text-primary-darkBlue">
                             <input
                                 type="checkbox"
@@ -856,9 +856,9 @@ const NewProduct = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div>}
 
-                    <div className="flex flex-col gap-2">
+                    {false && <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm text-primary-darkBlue">
                             <input
                                 type="checkbox"
@@ -924,9 +924,9 @@ const NewProduct = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div>}
 
-                    <div className="flex flex-col gap-2">
+                    {false && <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm text-primary-darkBlue">
                             <input
                                 type="checkbox"
@@ -1042,7 +1042,7 @@ const NewProduct = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </div>}
 
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 text-sm text-primary-darkBlue">
@@ -1188,8 +1188,8 @@ const NewProduct = () => {
                         </div>
                     </div>
 
-                    <h2 className="font-medium">Catalogue Highlight Tags</h2>
-                    <div className="flex flex-col gap-3">
+                    {false && <h2 className="font-medium">Catalogue Highlight Tags</h2>}
+                    {false && <div className="flex flex-col gap-3">
                         <div className="flex flex-col gap-2">
                             <div className="flex justify-between items-center border rounded">
                                 <input
@@ -1237,7 +1237,7 @@ const NewProduct = () => {
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    </div>}
 
                     <h2 className="font-medium">Brand Details</h2>
                     <div className="flex gap-4 items-start">

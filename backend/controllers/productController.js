@@ -1661,13 +1661,17 @@ exports.updateProduct = asyncErrorHandler(async (req, res, next) => {
     }
     req.body.specifications = specs;
 
-    // Parse categories / subCategories when they arrive as a JSON string from FormData
-    if (typeof req.body.categories === 'string') {
-        try { req.body.categories = JSON.parse(req.body.categories); } catch (e) { req.body.categories = []; }
-    }
-    if (typeof req.body.subCategories === 'string') {
-        try { req.body.subCategories = JSON.parse(req.body.subCategories); } catch (e) { req.body.subCategories = []; }
-    }
+    // Normalize categories / subCategories: may arrive as a plain string (single item),
+    // a JSON-stringified array (old format), or already an array (multiple items via FormData append).
+    const parseMultiField = (val) => {
+        if (Array.isArray(val)) return val.filter(Boolean);
+        if (typeof val !== 'string') return [];
+        const s = val.trim();
+        if (s.startsWith('[')) { try { return JSON.parse(s).filter(Boolean); } catch(e) {} }
+        return s ? [s] : [];
+    };
+    if (req.body.categories !== undefined) req.body.categories = parseMultiField(req.body.categories);
+    if (req.body.subCategories !== undefined) req.body.subCategories = parseMultiField(req.body.subCategories);
 
     req.body.user = req.user.id;
 
